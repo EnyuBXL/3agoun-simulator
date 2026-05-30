@@ -1473,7 +1473,7 @@
         const pg = await pdf.getPage(i);
         const ct = await pg.getTextContent();
         const pageText = ct.items.map(x => x.str).join(' ').replace(/\s+/g, ' ').trim();
-        pageTexts.push(pageText);
+        pageTexts.push(pageText.substring(0, 3000)); // limité pour IDB
         txt += pageText + '\n';
       }
       txt = txt.trim();
@@ -1820,8 +1820,11 @@
 
     document.getElementById('qload').style.display = 'block';
     try {
+      const fromPage = qPageMode === 'range' ? parseInt(document.getElementById('qpagefrom').value) : 1;
+      const toPage   = qPageMode === 'range' ? parseInt(document.getElementById('qpageto').value)   : doc.pages;
       const txt = getTextForQuiz(doc, document.getElementById('qpagefrom'), document.getElementById('qpageto'), qPageMode);
-      const qs = await genQs(txt, doc.name, doc.sub, cnt, qtype, gk || k, !!gk, qDiff);
+      const pageRange = qPageMode === 'range' ? `pages ${fromPage} à ${toPage}` : null;
+      const qs = await genQs(txt, doc.name, doc.sub, cnt, qtype, gk || k, !!gk, qDiff, pageRange);
       const sqEntry = { id: 'sq_' + Date.now(), docId: id, docName: doc.name, docIco: doc.ico, type: qtype, diff: qDiff, qs, cur: 0, score: 0, wrongs: [], fkn: 0, finished: false, createdAt: new Date().toISOString() };
       savedQuizzes.unshift(sqEntry);
       persistSavedQuizzes();
@@ -1855,7 +1858,7 @@
   }
 
   /* AI GENERATION */
-  async function genQs(text, name, sub, cnt, type, key, useGemini = false, diff = 'facile') {
+  async function genQs(text, name, sub, cnt, type, key, useGemini = false, diff = 'facile', pageRange = null) {
     const excerpt = text.substring(0, 12000);
     const typeInstr = {
       mcq:   `Generate ${cnt} multiple choice questions with 4 options. Format: [{"q":"...","options":["A","B","C","D"],"correct":0,"explanation":"..."}] where correct is the 0-based index.`,
@@ -1866,7 +1869,9 @@
 
     const diffInstr = DIFF_PROMPTS[diff] || DIFF_PROMPTS.facile;
 
-    const pageNote = (diff !== 'facile' || excerpt.length < text.length) ? `IMPORTANT: Generate questions EXCLUSIVELY and STRICTLY from the content provided between the --- delimiters above. Do NOT use any external knowledge. Do NOT reference topics that are not explicitly present in the text above.` : '';
+    const pageNote = pageRange
+      ? `CRITICAL: This content is from ${pageRange} of the document ONLY. Generate questions EXCLUSIVELY about what is written in the text above. Do NOT generate questions about any other pages or topics not present in this exact text.`
+      : `IMPORTANT: Generate questions EXCLUSIVELY from the content provided above. Do NOT use external knowledge.`;
 
     const prompt = `You are a teacher creating study material for a 5th secondary student (16-17 years) in "${sub}".
 
