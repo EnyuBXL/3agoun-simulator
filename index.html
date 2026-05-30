@@ -1,0 +1,2537 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3agoun de cancun simulator</title>
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="3agoun Simulator">
+  <meta name="theme-color" content="#0d1f14">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --p: #52b788;
+      --s: #1a7a4a;
+      --bg: #060f09;
+      --sur: #0d1f14;
+      --card: #0a1a0f;
+      --tx: #b7d5c0;
+      --dim: #4a6b55;
+      --ok: #52b788;
+      --err: #c04040;
+      --warn: #c88a10;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--tx);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* NAV */
+    .nav {
+      background: var(--sur);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 1px solid rgba(108, 99, 255, .3);
+    }
+
+    .logo {
+      font-size: 20px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #6c63ff, #ff6584);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .nav-btn {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      padding: 4px;
+    }
+
+    /* PAGES */
+    .page {
+      display: none;
+      padding: 16px;
+      max-width: 800px;
+      margin: 0 auto;
+      padding-bottom: 80px;
+      animation: fi .3s ease;
+    }
+
+
+    .page.active {
+      display: block;
+    }
+
+    @keyframes fi {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes logobounce {
+      0%   { transform: scale(1); }
+      50%  { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+
+    .logo.bounce {
+      animation: logobounce .3s ease;
+    }
+
+    /* BOTTOM NAV */
+    .bnav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--sur);
+      display: flex;
+      border-top: 1px solid rgba(108, 99, 255, .3);
+      z-index: 100;
+    }
+
+    .bni {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 8px 2px;
+      background: none;
+      border: none;
+      color: var(--dim);
+      font-size: 9px;
+      cursor: pointer;
+      transition: color .2s;
+      gap: 3px;
+      min-width: 0;
+    }
+
+    .bni .ic {
+      font-size: 19px;
+    }
+
+    .bni.active {
+      color: var(--p);
+    }
+
+    /* CARDS */
+    .card {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 12px;
+      border: 1px solid rgba(108, 99, 255, .15);
+    }
+
+    /* BUTTONS */
+    .btn {
+      display: inline-block;
+      padding: 12px 24px;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all .2s;
+      text-align: center;
+      width: 100%;
+    }
+
+    .bp {
+      background: linear-gradient(135deg, var(--p), #8b5cf6);
+      color: #fff;
+    }
+
+    .bp:hover {
+      opacity: .9;
+      transform: translateY(-1px);
+    }
+
+    .bs {
+      background: rgba(108, 99, 255, .15);
+      color: var(--p);
+      border: 1px solid rgba(108, 99, 255, .3);
+    }
+
+    .bd {
+      background: rgba(248, 113, 113, .15);
+      color: var(--err);
+      border: 1px solid rgba(248, 113, 113, .3);
+    }
+
+    /* INPUTS */
+    input, textarea, select {
+      width: 100%;
+      background: rgba(255, 255, 255, .05);
+      border: 1px solid rgba(108, 99, 255, .3);
+      border-radius: 10px;
+      padding: 12px;
+      color: var(--tx);
+      font-size: 14px;
+      margin-bottom: 12px;
+      outline: none;
+      transition: border-color .2s;
+      font-family: inherit;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      border-color: var(--p);
+    }
+
+    label {
+      font-size: 12px;
+      color: var(--dim);
+      margin-bottom: 4px;
+      display: block;
+    }
+
+    /* PROGRESS */
+    .pbar {
+      background: rgba(255, 255, 255, .1);
+      border-radius: 4px;
+      height: 6px;
+      overflow: hidden;
+    }
+
+    .pfill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--p), var(--s));
+      border-radius: 4px;
+      transition: width .5s ease;
+    }
+
+    /* STATS */
+    .sgrid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin: 16px 0;
+    }
+
+    .scard {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 12px;
+      text-align: center;
+      border: 1px solid rgba(108, 99, 255, .15);
+    }
+
+    .sval {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--p);
+    }
+
+    .slbl {
+      font-size: 11px;
+      color: var(--dim);
+      margin-top: 2px;
+    }
+
+    /* COURSE GRID */
+    .cgrid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    @media (min-width: 600px) {
+      .cgrid  { grid-template-columns: repeat(3, 1fr); }
+      .sgrid  { grid-template-columns: repeat(4, 1fr); }
+    }
+
+    .ccard {
+      background: var(--card);
+      border-radius: 14px;
+      padding: 16px;
+      border: 1px solid rgba(108, 99, 255, .15);
+      cursor: pointer;
+      transition: all .2s;
+    }
+
+    .ccard:hover {
+      border-color: var(--p);
+      transform: translateY(-2px);
+    }
+
+    .cic {
+      font-size: 28px;
+      margin-bottom: 8px;
+    }
+
+    .cnm {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .cct {
+      font-size: 11px;
+      color: var(--dim);
+      margin-top: 4px;
+    }
+
+    /* UPLOAD */
+    .uzone {
+      border: 2px dashed rgba(108, 99, 255, .4);
+      border-radius: 16px;
+      padding: 40px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all .2s;
+      margin-bottom: 16px;
+    }
+
+    .uzone:hover, .uzone.drag {
+      border-color: var(--p);
+      background: rgba(108, 99, 255, .05);
+    }
+
+    .uzone .uic {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+
+    /* DOC LIST */
+    .ditem {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--card);
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 10px;
+      border: 1px solid rgba(108, 99, 255, .15);
+    }
+
+    .dic {
+      font-size: 28px;
+      flex-shrink: 0;
+    }
+
+    .dinf {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .dnm {
+      font-size: 14px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .dmt {
+      font-size: 11px;
+      color: var(--dim);
+      margin-top: 2px;
+    }
+
+    .dact {
+      display: flex;
+      gap: 8px;
+    }
+
+    .ibtn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 18px;
+      padding: 4px;
+      border-radius: 8px;
+      transition: background .2s;
+    }
+
+    .ibtn:hover {
+      background: rgba(255, 255, 255, .1);
+    }
+
+    /* QUIZ */
+    .qhdr {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .qcnt {
+      font-size: 13px;
+      color: var(--dim);
+    }
+
+    .qbdg {
+      background: rgba(108, 99, 255, .2);
+      color: var(--p);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .qtxt {
+      font-size: 18px;
+      font-weight: 600;
+      line-height: 1.5;
+      margin-bottom: 24px;
+      min-height: 80px;
+    }
+
+    .olist {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .obtn {
+      background: rgba(255, 255, 255, .04);
+      border: 2px solid rgba(108, 99, 255, .2);
+      border-radius: 12px;
+      padding: 14px 16px;
+      color: var(--tx);
+      font-size: 14px;
+      cursor: pointer;
+      text-align: left;
+      transition: all .2s;
+      width: 100%;
+    }
+
+    .obtn:hover:not(:disabled) {
+      border-color: var(--p);
+      background: rgba(108, 99, 255, .1);
+    }
+
+    .obtn.ok {
+      border-color: var(--ok);
+      background: rgba(74, 222, 128, .1);
+      color: var(--ok);
+    }
+
+    .obtn.ng {
+      border-color: var(--err);
+      background: rgba(248, 113, 113, .1);
+      color: var(--err);
+    }
+
+    .expbox {
+      background: rgba(108, 99, 255, .1);
+      border: 1px solid rgba(108, 99, 255, .3);
+      border-radius: 12px;
+      padding: 14px;
+      margin-top: 16px;
+      font-size: 13px;
+      line-height: 1.6;
+      display: none;
+    }
+
+    /* FLASHCARD */
+    .fc {
+      perspective: 1000px;
+      height: 200px;
+      margin-bottom: 16px;
+    }
+
+    .fci {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transition: transform .6s;
+      transform-style: preserve-3d;
+    }
+
+    .fc.flip .fci {
+      transform: rotateY(180deg);
+    }
+
+    .fcf, .fcb {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      text-align: center;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .fcf {
+      background: linear-gradient(135deg, rgba(108, 99, 255, .3), rgba(139, 92, 246, .3));
+      border: 1px solid rgba(108, 99, 255, .4);
+    }
+
+    .fcb {
+      background: linear-gradient(135deg, rgba(255, 101, 132, .3), rgba(255, 152, 0, .3));
+      border: 1px solid rgba(255, 101, 132, .4);
+      transform: rotateY(180deg);
+    }
+
+    /* RESULTS */
+    .rcircle {
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      background: conic-gradient(var(--p) calc(var(--pct, 0) * 1%), rgba(255, 255, 255, .1) 0);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+    }
+
+    .rcin {
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      background: var(--sur);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+
+    .rpct {
+      font-size: 30px;
+      font-weight: 800;
+      color: var(--p);
+    }
+
+    /* MODAL */
+    .moverlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .7);
+      z-index: 200;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    .moverlay.on {
+      display: flex;
+    }
+
+    .modal {
+      background: var(--sur);
+      border-radius: 24px 24px 0 0;
+      padding: 24px;
+      width: 100%;
+      max-width: 800px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .mhandle {
+      width: 40px;
+      height: 4px;
+      background: rgba(255, 255, 255, .2);
+      border-radius: 2px;
+      margin: 0 auto 20px;
+    }
+
+    /* LOADING */
+    .spin {
+      display: inline-block;
+      width: 32px;
+      height: 32px;
+      border: 3px solid rgba(108, 99, 255, .3);
+      border-top-color: var(--p);
+      border-radius: 50%;
+      animation: sp .8s linear infinite;
+    }
+
+    @keyframes sp {
+      to { transform: rotate(360deg); }
+    }
+
+    .ldstate {
+      text-align: center;
+      padding: 60px 20px;
+    }
+
+    .ldstate p {
+      color: var(--dim);
+      margin-top: 16px;
+      font-size: 14px;
+    }
+
+    /* SUBJECT GRID */
+    .subgrid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin: 12px 0;
+    }
+
+    .subi {
+      background: rgba(255, 255, 255, .05);
+      border: 1px solid rgba(108, 99, 255, .2);
+      border-radius: 10px;
+      padding: 10px;
+      cursor: pointer;
+      text-align: center;
+      font-size: 12px;
+      transition: all .2s;
+    }
+
+    .subi:hover, .subi.sel {
+      border-color: var(--p);
+      background: rgba(108, 99, 255, .1);
+      color: var(--p);
+    }
+
+    /* TOAST */
+    .toast {
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--sur);
+      border: 1px solid rgba(108, 99, 255, .3);
+      border-radius: 12px;
+      padding: 10px 20px;
+      font-size: 13px;
+      z-index: 300;
+      opacity: 0;
+      transition: all .3s;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    .toast.on {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* MISC */
+    .stitle {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .stitle .sa {
+      font-size: 12px;
+      color: var(--p);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .g2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .mt2 { margin-top: 8px; }
+    .mt4 { margin-top: 16px; }
+    .mb4 { margin-bottom: 16px; }
+    .dim { color: var(--dim); }
+    .tsm { font-size: 13px; }
+
+    .apibox {
+      background: rgba(251, 191, 36, .05);
+      border: 1px solid rgba(251, 191, 36, .2);
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 16px;
+    }
+
+    .apibox p {
+      font-size: 12px;
+      color: var(--warn);
+      margin-bottom: 10px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      background: rgba(108, 99, 255, .2);
+      color: var(--p);
+    }
+
+    h2 { font-size: 20px; margin-bottom: 4px; }
+    h3 { font-size: 16px; margin-bottom: 8px; }
+
+    .wc {
+      text-align: center;
+      padding: 24px 0;
+    }
+
+    .wc h1 {
+      font-size: 28px;
+      font-weight: 800;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, #6c63ff, #ff6584);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .wc p {
+      color: var(--dim);
+      font-size: 14px;
+    }
+
+    .si-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, .05);
+    }
+
+    /* CREATOR */
+    .type4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .qitem {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--card);
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      border: 1px solid rgba(108, 99, 255, .15);
+    }
+
+    .qitem-num {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: rgba(108, 99, 255, .2);
+      color: var(--p);
+      font-size: 11px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .qitem-txt {
+      flex: 1;
+      font-size: 13px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .manual-badge {
+      background: rgba(82, 183, 136, .15);
+      color: var(--ok);
+      border: 1px solid rgba(82, 183, 136, .3);
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="logo" onclick="logoClick()" style="cursor:pointer">3agoun de cancun simulator ✦</div>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<!-- HOME -->
+<div class="page active" id="page-home">
+  <div class="wc">
+    <h1>3agoun de cancun simulator 🌮</h1>
+    <p style="background:linear-gradient(135deg,#6c63ff,#ff6584);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px">Gérard va vous froisser</p>
+    <p style="background:linear-gradient(135deg,#6c63ff,#ff6584);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Prêt à simuler ?</p>
+  </div>
+  <div class="sgrid">
+    <div class="scard"><div class="sval" id="st-docs">0</div><div class="slbl">Documents</div></div>
+    <div class="scard"><div class="sval" id="st-quiz">0</div><div class="slbl">Quiz faits</div></div>
+    <div class="scard"><div class="sval" id="st-avg">—</div><div class="slbl">Moy. score</div></div>
+  </div>
+  <div class="stitle">
+    <span>Mes cours</span>
+    <button class="sa" onclick="go('upload')">+ Ajouter</button>
+  </div>
+  <div class="cgrid" id="cgrid"></div>
+  <div id="nodoc" style="display:none">
+    <div class="card" style="text-align:center;padding:32px">
+      <div style="font-size:48px;margin-bottom:12px">📚</div>
+      <p style="font-size:15px;font-weight:600;margin-bottom:8px">Aucun document</p>
+      <p style="font-size:13px;color:var(--dim);margin-bottom:16px">Commence par importer une synthèse PDF</p>
+      <button class="btn bp" onclick="go('upload')">Importer un PDF</button>
+    </div>
+  </div>
+  <div class="stitle mt4"><span>Révision rapide</span></div>
+  <div class="card" style="display:flex;gap:12px;align-items:center">
+    <div style="font-size:36px">⚡</div>
+    <div style="flex:1">
+      <div style="font-weight:700;font-size:15px">Quiz express</div>
+      <div style="font-size:12px;color:var(--dim);margin-top:4px">10 questions sur tes cours</div>
+    </div>
+    <button class="btn bp" style="width:auto;padding:10px 16px" onclick="quickQuiz()">Go!</button>
+  </div>
+</div>
+
+<!-- UPLOAD / DOCS -->
+<div class="page" id="page-upload">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+    <h2 style="margin-bottom:0">📂 Mes documents</h2>
+    <button id="add-btn" onclick="document.getElementById('pfi').click()" style="display:none;width:36px;height:36px;border-radius:50%;border:none;background:linear-gradient(135deg,var(--p),#8b5cf6);color:#fff;font-size:22px;cursor:pointer;display:none;align-items:center;justify-content:center;line-height:1">+</button>
+  </div>
+  <!-- Grande zone (quand vide) -->
+  <div class="uzone" id="uzone" onclick="document.getElementById('pfi').click()">
+    <div class="uic">📄</div>
+    <p style="font-weight:600;margin-bottom:4px">Glisse un PDF ici</p>
+    <p style="color:var(--dim);font-size:13px">ou clique pour choisir</p>
+  </div>
+  <input type="file" id="pfi" accept=".pdf" style="display:none" multiple>
+  <div id="doclist"></div>
+</div>
+
+<!-- QUIZ -->
+<div class="page" id="page-quiz">
+
+  <!-- LISTE DES QUIZ -->
+  <div id="qlist-view">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <h2 style="margin:0">🧠 Quiz</h2>
+      <button onclick="showQSetup()" style="width:36px;height:36px;border-radius:50%;border:none;background:linear-gradient(135deg,var(--p),#8b5cf6);color:#fff;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1">+</button>
+    </div>
+    <div id="qlist-empty" style="display:none;align-items:center;justify-content:center;pointer-events:none;padding:60px 0;text-align:center">
+      <p style="font-size:22px;font-weight:700;color:rgba(255,255,255,.12);text-align:center;padding:20px">Viens te tester</p>
+    </div>
+    <div id="qlist-items"></div>
+  </div>
+
+  <!-- SETUP -->
+  <div id="qsel" style="display:none">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+      <button onclick="showQList()" style="background:none;border:none;color:var(--tx);font-size:22px;cursor:pointer;padding:4px">←</button>
+      <h2 style="margin:0">Nouveau quiz</h2>
+    </div>
+    <label>Document</label>
+    <select id="qdoc" onchange="qDocChanged()"><option value="">-- Choisir --</option></select>
+    <label>Pages</label>
+    <div class="g2 mb4">
+      <div class="subi sel" onclick="qPickPages(this,'all')" data-qp="all">📄 Tout le PDF</div>
+      <div class="subi" onclick="qPickPages(this,'range')" data-qp="range">📑 Plage de pages</div>
+    </div>
+    <div id="qpagerange" style="display:none" class="mb4">
+      <div class="g2">
+        <div><label>De la page</label><input type="number" id="qpagefrom" min="1" value="1" style="margin-bottom:0"></div>
+        <div><label>À la page</label><input type="number" id="qpageto" min="1" value="10" style="margin-bottom:0"></div>
+      </div>
+      <div id="qpageinfo" style="font-size:11px;color:var(--dim);margin-top:6px;text-align:center"></div>
+    </div>
+    <label>Nombre de questions</label>
+    <select id="qcnt">
+      <option value="5">5 questions</option>
+      <option value="10" selected>10 questions</option>
+      <option value="15">15 questions</option>
+      <option value="20">20 questions</option>
+    </select>
+    <label>Type</label>
+    <div class="g2 mb4">
+      <div class="subi sel" onclick="pickType(this,'mcq')" data-t="mcq"><div style="font-size:20px">🔘</div><div>Choix multiples</div></div>
+      <div class="subi" onclick="pickType(this,'vf')" data-t="vf"><div style="font-size:20px">✅</div><div>Vrai / Faux</div></div>
+      <div class="subi" onclick="pickType(this,'flash')" data-t="flash"><div style="font-size:20px">🃏</div><div>Flashcards</div></div>
+      <div class="subi" onclick="pickType(this,'open')" data-t="open"><div style="font-size:20px">✏️</div><div>Questions ouvertes</div></div>
+    </div>
+    <label>Difficulté</label>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
+      <div class="subi sel" onclick="pickDiff(this,'facile')" data-diff="facile">😊 Facile</div>
+      <div class="subi" onclick="pickDiff(this,'normal')" data-diff="normal">🎯 Normal</div>
+      <div class="subi" onclick="pickDiff(this,'dur')" data-diff="dur">🔥 Dur</div>
+      <div class="subi" onclick="pickDiff(this,'merde')" data-diff="merde" style="border-color:rgba(248,113,113,.4);color:var(--err)">💀 T'es dans la merde</div>
+    </div>
+    <button class="btn bp" onclick="startQuiz()">Lancer ⚡</button>
+  </div>
+
+  <!-- Loading -->
+  <div id="qload" style="display:none">
+    <div class="ldstate">
+      <div class="spin"></div>
+      <p id="ldmsg">Génération des questions avec l'IA...</p>
+      <p style="font-size:11px;margin-top:8px;color:var(--dim)">Quelques secondes...</p>
+    </div>
+  </div>
+
+  <!-- Active quiz -->
+  <div id="qactive" style="display:none">
+    <button onclick="saveAndExitQuiz()" style="background:none;border:none;color:var(--dim);font-size:22px;cursor:pointer;padding:4px 0;margin-bottom:8px;display:block">←</button>
+    <!-- MCQ / VF -->
+    <div id="qmcq">
+      <div class="qhdr">
+        <span class="qcnt" id="qnum">1/10</span>
+        <span class="qbdg" id="qsc">Score: 0</span>
+      </div>
+      <div class="pbar mb4"><div class="pfill" id="qprog" style="width:0%"></div></div>
+      <div class="qtxt" id="qtext"></div>
+      <div class="olist" id="qopts"></div>
+      <div class="expbox" id="qexp"></div>
+      <button class="btn bp mt4" id="qnext" style="display:none" onclick="nextQ()">Question suivante →</button>
+    </div>
+    <!-- Flashcard -->
+    <div id="qflash" style="display:none">
+      <div class="qhdr">
+        <span class="qcnt" id="fcnum">1/10</span>
+        <span class="qbdg">🃏 Flashcards</span>
+      </div>
+      <div class="pbar mb4"><div class="pfill" id="fcprog" style="width:0%"></div></div>
+      <div class="fc" id="fc" onclick="flipCard()">
+        <div class="fci" id="fci">
+          <div class="fcf"><div id="fcq"></div></div>
+          <div class="fcb"><div id="fca"></div></div>
+        </div>
+      </div>
+      <p style="text-align:center;font-size:12px;color:var(--dim);margin-bottom:16px">Touche la carte pour voir la réponse</p>
+      <div class="g2">
+        <button class="btn bd" onclick="fcAns(false)">❌ Je savais pas</button>
+        <button class="btn bs" onclick="fcAns(true)">✅ Je savais</button>
+      </div>
+    </div>
+    <!-- Open -->
+    <div id="qopen" style="display:none">
+      <div class="qhdr">
+        <span class="qcnt" id="opnum">1/10</span>
+        <span class="qbdg">✏️ Ouvertes</span>
+      </div>
+      <div class="pbar mb4"><div class="pfill" id="opprog" style="width:0%"></div></div>
+      <div class="qtxt" id="opqtxt"></div>
+      <textarea id="opans" rows="4" placeholder="Écris ta réponse ici..."></textarea>
+      <button class="btn bp" id="opcheck" onclick="checkOpen()">Vérifier avec l'IA</button>
+      <div class="expbox" id="opexp" style="margin-top:12px"></div>
+      <button class="btn bs mt4" id="opnext" style="display:none" onclick="nextOpen()">Question suivante →</button>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div id="qres" style="display:none">
+    <button onclick="showQList()" style="background:none;border:none;color:var(--dim);font-size:22px;cursor:pointer;padding:4px 0;margin-bottom:8px;display:block">←</button>
+    <div style="text-align:center;padding:20px 0">
+      <h2>Résultats 🎉</h2>
+      <div class="rcircle mt4" id="rcircle" style="--pct:0">
+        <div class="rcin">
+          <div class="rpct" id="rpct">0%</div>
+          <div style="font-size:11px;color:var(--dim)">Score</div>
+        </div>
+      </div>
+      <div id="rmsg" style="font-size:16px;font-weight:600;margin-bottom:4px"></div>
+      <div id="rdet" style="font-size:13px;color:var(--dim)"></div>
+    </div>
+    <div class="g2 mt4">
+      <button class="btn bs" onclick="restartQ()">🔁 Refaire</button>
+      <button class="btn bp" onclick="showQList()">← Mes quiz</button>
+    </div>
+    <div id="wrongs" class="mt4" style="display:none">
+      <div class="stitle">Réponses incorrectes</div>
+      <div id="wronglist"></div>
+    </div>
+  </div>
+</div>
+
+<!-- CREATE -->
+<div class="page" id="page-create">
+  <h2>✏️ Créer un quiz</h2>
+  <p class="dim tsm mb4">Sans IA — 100% gratuit</p>
+
+  <label>Nom du quiz</label>
+  <input type="text" id="cq-name" placeholder="Ex: Chapitre 3 — Photosynthèse">
+
+  <label>Matière</label>
+  <div class="subgrid mb4" id="cq-subgrid"></div>
+
+  <div class="card">
+    <div class="stitle" style="margin-bottom:12px"><span>Nouvelle question</span></div>
+
+    <label>Type</label>
+    <div class="type4">
+      <div class="subi sel" onclick="cqPickType(this,'mcq')" data-ct="mcq"><div style="font-size:16px">🔘</div><div>QCM</div></div>
+      <div class="subi" onclick="cqPickType(this,'vf')" data-ct="vf"><div style="font-size:16px">✅</div><div>V/F</div></div>
+      <div class="subi" onclick="cqPickType(this,'flash')" data-ct="flash"><div style="font-size:16px">🃏</div><div>Flash</div></div>
+      <div class="subi" onclick="cqPickType(this,'open')" data-ct="open"><div style="font-size:16px">✏️</div><div>Ouverte</div></div>
+    </div>
+
+    <!-- MCQ -->
+    <div id="cq-mcq">
+      <label>Question</label>
+      <textarea id="cq-mcq-q" rows="2" placeholder="Ta question..."></textarea>
+      <label>Option A</label><input type="text" id="cq-mcq-a" placeholder="Option A">
+      <label>Option B</label><input type="text" id="cq-mcq-b" placeholder="Option B">
+      <label>Option C (optionnel)</label><input type="text" id="cq-mcq-c" placeholder="Option C">
+      <label>Option D (optionnel)</label><input type="text" id="cq-mcq-d" placeholder="Option D">
+      <label>Bonne réponse</label>
+      <select id="cq-mcq-correct"><option value="0">A</option><option value="1">B</option><option value="2">C</option><option value="3">D</option></select>
+      <label>Explication (optionnel)</label>
+      <input type="text" id="cq-mcq-exp" placeholder="Pourquoi cette réponse...">
+    </div>
+
+    <!-- VF -->
+    <div id="cq-vf" style="display:none">
+      <label>Affirmation</label>
+      <textarea id="cq-vf-q" rows="2" placeholder="L'affirmation à juger..."></textarea>
+      <label>Réponse correcte</label>
+      <select id="cq-vf-correct"><option value="true">✅ Vrai</option><option value="false">❌ Faux</option></select>
+      <label>Explication (optionnel)</label>
+      <input type="text" id="cq-vf-exp" placeholder="Explication...">
+    </div>
+
+    <!-- Flash -->
+    <div id="cq-flash" style="display:none">
+      <label>Recto (terme / question)</label>
+      <textarea id="cq-flash-front" rows="2" placeholder="Terme ou question..."></textarea>
+      <label>Verso (définition / réponse)</label>
+      <textarea id="cq-flash-back" rows="2" placeholder="Définition ou réponse..."></textarea>
+    </div>
+
+    <!-- Open -->
+    <div id="cq-open" style="display:none">
+      <label>Question</label>
+      <textarea id="cq-open-q" rows="2" placeholder="Ta question ouverte..."></textarea>
+      <label>Réponse modèle</label>
+      <textarea id="cq-open-ans" rows="3" placeholder="La réponse attendue..."></textarea>
+    </div>
+
+    <button class="btn bs" onclick="addManualQ()">+ Ajouter cette question</button>
+  </div>
+
+  <div id="cq-list" class="mt4"></div>
+
+  <button class="btn bp mt4" onclick="saveManualQuiz()">💾 Sauvegarder le quiz</button>
+</div>
+
+<!-- SETTINGS -->
+<div class="page" id="page-settings">
+  <h2>⚙️ Réglages</h2>
+  <!-- Groq (gratuit, fonctionne en Belgique/UE) -->
+  <div class="card mb4" style="border-color:rgba(82,183,136,.3);background:rgba(82,183,136,.05)">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <span style="font-size:18px">🆓</span>
+      <span style="font-weight:700;color:var(--ok)">Groq — Gratuit (Belgique ✓)</span>
+      <span class="manual-badge">Recommandé</span>
+    </div>
+    <p class="tsm dim" style="margin-bottom:10px;line-height:1.6">
+      1. Va sur <strong style="color:var(--tx)">console.groq.com</strong><br>
+      2. Crée un compte → "API Keys" → "Create API Key"<br>
+      3. Copie la clé ci-dessous (aucune carte bancaire)
+    </p>
+    <label>Clé API Groq</label>
+    <input type="password" id="geminikey" placeholder="gsk_..." oninput="autoSaveGeminiKey()">
+    <div id="geministatus" style="font-size:12px;margin-top:-8px;margin-bottom:4px;min-height:16px;color:var(--dim)"></div>
+  </div>
+
+  <!-- Anthropic (payant) -->
+  <div class="apibox">
+    <p>🔑 Anthropic Claude — Pro (payant, meilleure qualité)</p>
+    <label>Clé API Anthropic</label>
+    <input type="password" id="apikey" placeholder="sk-ant-..." oninput="autoSaveKey()">
+    <div id="keystatus" style="font-size:12px;margin-top:-8px;margin-bottom:12px;min-height:16px;color:var(--dim)"></div>
+  </div>
+
+  <div class="card mt4">
+    <div class="si-item"><span>Modèle IA actif</span><span class="dim tsm" id="active-model">—</span></div>
+    <div class="si-item"><span>Langue</span><span class="dim tsm">Français</span></div>
+    <div class="si-item"><span>Niveau</span><span class="dim tsm">5e Secondaire</span></div>
+    <div class="si-item" style="border:none"><span>Stockage utilisé</span><span class="dim tsm" id="storageused">—</span></div>
+  </div>
+  <div class="card mt4" style="border-color:rgba(82,183,136,.3);background:rgba(82,183,136,.05)">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+      <span style="font-size:18px">📱</span>
+      <span style="font-weight:700;color:var(--ok)">Utiliser sur mobile</span>
+    </div>
+    <p class="tsm dim" style="line-height:1.8">
+      1. Lance <strong style="color:var(--tx)">Démarrer sur mobile.bat</strong> en tant qu'Administrateur<br>
+      2. Sur ce PC : <strong style="color:var(--ok)">http://www.3agoun.com:8080</strong><br>
+      3. Sur mobile (même WiFi) : <strong style="color:var(--ok)">http://[IP affichée]:8080</strong><br>
+      4. Clique <strong style="color:var(--tx)">"Ajouter à l'écran d'accueil"</strong> pour installer l'app
+    </p>
+  </div>
+
+  <div class="card mt4" style="border-color:rgba(108,99,255,.3);background:rgba(108,99,255,.05)">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+      <span style="font-size:18px">🔄</span>
+      <span style="font-weight:700;color:var(--p)">Partager mes documents</span>
+    </div>
+    <p class="tsm dim" style="margin-bottom:12px;line-height:1.6">Exporte tous tes documents en un fichier, puis importe-le sur un autre appareil.</p>
+    <div class="g2">
+      <button class="btn bs" onclick="exportDocs()">📤 Exporter</button>
+      <button class="btn bs" onclick="document.getElementById('importFile').click()">📥 Importer</button>
+    </div>
+    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importDocs(this)">
+    <div id="transferStatus" style="font-size:12px;margin-top:10px;min-height:16px;text-align:center"></div>
+  </div>
+
+  <button class="btn bd mt4" onclick="clearAll()">🗑️ Effacer toutes les données</button>
+</div>
+
+<!-- EXAM -->
+<div class="page" id="page-exam">
+
+  <!-- Config -->
+  <div id="ex-sel">
+    <h2>📝 Simulation d'examen</h2>
+    <p class="dim tsm mb4">L'IA génère un vrai examen à partir de tes synthèses</p>
+
+    <label>Documents (plusieurs possibles)</label>
+    <div id="ex-doclist" style="margin-bottom:12px"></div>
+
+    <label>Pages</label>
+    <div class="g2 mb4">
+      <div class="subi sel" onclick="exPickPages(this,'all')" data-exp="all">📄 Tout le PDF</div>
+      <div class="subi" onclick="exPickPages(this,'range')" data-exp="range">📑 Plage de pages</div>
+    </div>
+    <div id="expagerange" style="display:none" class="mb4">
+      <div class="g2">
+        <div><label>De la page</label><input type="number" id="expagefrom" min="1" value="1" style="margin-bottom:0"></div>
+        <div><label>À la page</label><input type="number" id="expageto" min="1" value="10" style="margin-bottom:0"></div>
+      </div>
+    </div>
+
+    <div class="g2">
+      <div>
+        <label>Durée</label>
+        <select id="ex-dur">
+          <option value="30">30 min</option>
+          <option value="45" selected>45 min</option>
+          <option value="60">1 heure</option>
+          <option value="90">1h30</option>
+        </select>
+      </div>
+      <div>
+        <label>Questions</label>
+        <select id="ex-cnt">
+          <option value="10">10</option>
+          <option value="15" selected>15</option>
+          <option value="20">20</option>
+        </select>
+      </div>
+    </div>
+
+    <label>Difficulté</label>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
+      <div class="subi" onclick="exPickDiff(this,'facile')" data-diff="facile">😊 Facile</div>
+      <div class="subi sel" onclick="exPickDiff(this,'normal')" data-diff="normal">🎯 Normal</div>
+      <div class="subi" onclick="exPickDiff(this,'dur')" data-diff="dur">🔥 Dur</div>
+      <div class="subi" onclick="exPickDiff(this,'merde')" data-diff="merde" style="border-color:rgba(248,113,113,.4);color:var(--err)">💀 T'es dans la merde</div>
+    </div>
+
+    <button class="btn bp" onclick="startExam()">Générer l'examen ⚡</button>
+  </div>
+
+  <!-- Loading -->
+  <div id="ex-load" style="display:none">
+    <div class="ldstate">
+      <div class="spin"></div>
+      <p>Génération de l'examen...</p>
+      <p style="font-size:11px;margin-top:8px;color:var(--dim)">L'IA prépare tes questions</p>
+    </div>
+  </div>
+
+  <!-- Active exam -->
+  <div id="ex-active" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div style="font-size:13px;color:var(--dim)" id="ex-qnum">Q 1/15</div>
+      <div style="background:rgba(248,113,113,.15);color:var(--err);border:1px solid rgba(248,113,113,.3);padding:6px 14px;border-radius:20px;font-size:14px;font-weight:700" id="ex-timer">45:00</div>
+    </div>
+    <div class="pbar mb4"><div class="pfill" id="ex-prog" style="width:0%"></div></div>
+
+    <!-- MCQ/VF question -->
+    <div id="ex-mcq-wrap">
+      <div class="qtxt" id="ex-qtxt"></div>
+      <div class="olist" id="ex-opts"></div>
+    </div>
+
+    <!-- Open question -->
+    <div id="ex-open-wrap" style="display:none">
+      <div class="qtxt" id="ex-otxt"></div>
+      <textarea id="ex-oans" rows="4" placeholder="Ta réponse..."></textarea>
+    </div>
+
+    <!-- Flash -->
+    <div id="ex-flash-wrap" style="display:none">
+      <div class="fc" id="ex-fc" onclick="exFlipCard()">
+        <div class="fci" id="ex-fci">
+          <div class="fcf"><div id="ex-fcq"></div></div>
+          <div class="fcb"><div id="ex-fca"></div></div>
+        </div>
+      </div>
+      <p style="text-align:center;font-size:12px;color:var(--dim);margin-bottom:12px">Touche pour retourner</p>
+      <div class="g2">
+        <button class="btn bd" onclick="exFcAns(false)">❌ Pas su</button>
+        <button class="btn bs" onclick="exFcAns(true)">✅ Su</button>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-top:16px">
+      <button class="btn bs" id="ex-prev" onclick="exNav(-1)" style="width:auto;padding:10px 16px">←</button>
+      <button class="btn bp" id="ex-next" onclick="exNav(1)" style="flex:1">Suivant →</button>
+      <button class="btn bd" id="ex-submit" onclick="submitExam()" style="display:none;flex:1">Remettre 📤</button>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div id="ex-res" style="display:none">
+    <div style="text-align:center;padding:20px 0">
+      <h2>Résultats de l'examen 🎓</h2>
+      <div class="rcircle mt4" id="ex-rcircle" style="--pct:0">
+        <div class="rcin">
+          <div class="rpct" id="ex-rpct">0%</div>
+          <div style="font-size:11px;color:var(--dim)">Score</div>
+        </div>
+      </div>
+      <div id="ex-rmsg" style="font-size:16px;font-weight:600;margin-bottom:4px"></div>
+      <div id="ex-rdet" style="font-size:13px;color:var(--dim)"></div>
+    </div>
+    <div id="ex-review" class="mt4"></div>
+    <button class="btn bp mt4" onclick="showExSel()">🔁 Nouvel examen</button>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bnav">
+  <button class="bni active" onclick="go('home')" id="nav-home"><span class="ic">🏠</span><span>Accueil</span></button>
+  <button class="bni" onclick="go('upload')" id="nav-upload"><span class="ic">📂</span><span>Docs</span></button>
+  <button class="bni" onclick="go('quiz')" id="nav-quiz"><span class="ic">🧠</span><span>Quiz</span></button>
+  <button class="bni" onclick="go('exam')" id="nav-exam"><span class="ic">📝</span><span>Examen</span></button>
+  <button class="bni" onclick="go('create')" id="nav-create"><span class="ic">✏️</span><span>Créer</span></button>
+  <button class="bni" onclick="go('settings')" id="nav-settings"><span class="ic">⚙️</span><span>Réglages</span></button>
+</nav>
+
+
+<!-- SUBJECT MODAL -->
+<div class="moverlay" id="submodal">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <h3>📚 Quelle matière ?</h3>
+    <p class="tsm dim mb4" id="modfilename"></p>
+    <label>Nom du document</label>
+    <input type="text" id="docname" placeholder="Nom du cours...">
+    <div class="subgrid" id="subgrid"></div>
+    <div class="g2 mt4">
+      <button class="btn bs" onclick="closeModal()">Annuler</button>
+      <button class="btn bp" onclick="confirmDoc()">Ajouter ✓</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+  const SUBS = [
+    { n: 'Mathématiques', i: '📐' }, { n: 'Français',      i: '📝' }, { n: 'Sciences',      i: '🔬' },
+    { n: 'Histoire',      i: '🏛️' }, { n: 'Géographie',    i: '🌍' }, { n: 'Chimie',        i: '⚗️' },
+    { n: 'Physique',      i: '⚡' }, { n: 'Biologie',      i: '🧬' }, { n: 'Anglais',       i: '🇬🇧' },
+    { n: 'Néerlandais',   i: '🇳🇱' }, { n: 'Éco & Social',  i: '💰' }, { n: 'Morale/Religion', i: '🕊️' },
+    { n: 'Latin/Grec',    i: '🏺' }, { n: 'Informatique',  i: '💻' }, { n: 'Autre',         i: '📚' }
+  ];
+
+  let S = { docs: [], stats: { done: 0, tot: 0, pts: 0 }, quiz: { qs: [], cur: 0, score: 0, type: 'mcq', wrongs: [], fkn: 0, docId: null } };
+  let selSub = null, qtype = 'mcq', pendingDoc = null, _db = null, _keyTimer = null;
+  let cqType = 'mcq', cqSub = null, manualQs = [];
+
+  /* ============ STORAGE (serveur partagé ou IndexedDB local) ============ */
+  const ON_SERVER = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+  function openDB() {
+    if (ON_SERVER) return Promise.resolve();
+    return new Promise((res, rej) => {
+      const r = indexedDB.open('studyai_v1', 1);
+      r.onupgradeneeded = e => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains('docs')) db.createObjectStore('docs', { keyPath: 'id' });
+      };
+      r.onsuccess = e => { _db = e.target.result; res(_db); };
+      r.onerror = e => rej(e.target.error);
+    });
+  }
+
+  async function idbPut(doc) {
+    if (ON_SERVER) {
+      await fetch('/api/docs', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(doc) });
+      return;
+    }
+    return new Promise((res, rej) => {
+      const tx = _db.transaction('docs', 'readwrite');
+      tx.objectStore('docs').put(doc);
+      tx.oncomplete = res;
+      tx.onerror = e => rej(e.target.error);
+    });
+  }
+
+  async function idbDel(id) {
+    if (ON_SERVER) {
+      await fetch('/api/docs/' + id, { method: 'DELETE' });
+      return;
+    }
+    return new Promise((res, rej) => {
+      const tx = _db.transaction('docs', 'readwrite');
+      tx.objectStore('docs').delete(id);
+      tx.oncomplete = res;
+      tx.onerror = e => rej(e.target.error);
+    });
+  }
+
+  async function idbAll() {
+    if (ON_SERVER) {
+      const r = await fetch('/api/docs');
+      return await r.json();
+    }
+    return new Promise((res, rej) => {
+      const tx = _db.transaction('docs', 'readonly');
+      const r = tx.objectStore('docs').getAll();
+      r.onsuccess = e => res(e.target.result);
+      r.onerror = e => rej(e.target.error);
+    });
+  }
+
+  /* ============ STATS (localStorage, small) ============ */
+  function saveStats() {
+    try { localStorage.setItem('sai_stats', JSON.stringify(S.stats)); } catch (e) {}
+  }
+
+  function loadStats() {
+    const sv = localStorage.getItem('sai_stats');
+    if (sv) { try { S.stats = { ...S.stats, ...JSON.parse(sv) }; } catch (e) {} }
+  }
+
+  /* ============ API KEY (auto-save) ============ */
+  function getKey() { return localStorage.getItem('sai_k') || ''; }
+  function getGeminiKey() { return localStorage.getItem('sai_gk') || ''; }
+
+  function autoSaveGeminiKey() {
+    const k = document.getElementById('geminikey').value.trim();
+    const el = document.getElementById('geministatus');
+    if (k) {
+      localStorage.setItem('sai_gk', k);
+      el.style.color = 'var(--ok)'; el.textContent = '✓ Clé sauvegardée';
+    } else {
+      localStorage.removeItem('sai_gk');
+      el.style.color = 'var(--dim)'; el.textContent = '';
+    }
+    updateActiveModel();
+  }
+
+  function updateActiveModel() {
+    const el = document.getElementById('active-model');
+    if (!el) return;
+    if (getGeminiKey()) el.textContent = 'Groq — Llama 3.3 70B (gratuit)';
+    else if (getKey()) el.textContent = 'Claude Sonnet 4.6 (payant)';
+    else el.textContent = 'Aucune clé configurée';
+  }
+
+  function autoSaveKey() {
+    const k = document.getElementById('apikey').value.trim();
+    const el = document.getElementById('keystatus');
+    if (k) {
+      localStorage.setItem('sai_k', k);
+      el.style.color = 'var(--ok)';
+      el.textContent = '✓ Clé sauvegardée';
+    } else {
+      localStorage.removeItem('sai_k');
+      el.style.color = 'var(--dim)';
+      el.textContent = '';
+    }
+  }
+
+  /* ============ STORAGE SIZE ============ */
+  function updateStorageInfo() {
+    try {
+      let b = 0;
+      for (const k of Object.keys(localStorage)) b += localStorage.getItem(k).length * 2;
+      const docs = S.docs.reduce((a, d) => (d.text ? a + d.text.length : a), 0) * 2;
+      const total = b + docs;
+      const el = document.getElementById('storageused');
+      if (el) el.textContent = total > 1048576 ? `${(total / 1048576).toFixed(1)} Mo` : `${Math.round(total / 1024)} Ko`;
+    } catch (e) {}
+  }
+
+  /* ============ INIT ============ */
+  async function init() {
+    try {
+      await openDB();
+      S.docs = await idbAll();
+    } catch (e) {
+      const sv = localStorage.getItem('sai');
+      if (sv) { try { const p = JSON.parse(sv); S.docs = p.docs || []; } catch (e) {} }
+    }
+    loadStats();
+    const k = getKey();
+    if (k) {
+      document.getElementById('apikey').value = k;
+      const el = document.getElementById('keystatus');
+      el.style.color = 'var(--ok)'; el.textContent = '✓ Clé sauvegardée';
+    }
+    const gk = getGeminiKey();
+    if (gk) {
+      document.getElementById('geminikey').value = gk;
+      const el = document.getElementById('geministatus');
+      el.style.color = 'var(--ok)'; el.textContent = '✓ Clé sauvegardée';
+    }
+    updateActiveModel();
+    loadSavedQuizzes();
+    renderHome(); renderDocs(); renderQSel(); setupUpload(); updateStorageInfo(); initCreator();
+  }
+
+  /* NAV */
+  function logoClick() {
+    const logo = document.querySelector('.logo');
+    if (document.getElementById('page-home').classList.contains('active')) {
+      logo.classList.remove('bounce');
+      void logo.offsetWidth;
+      logo.classList.add('bounce');
+      logo.addEventListener('animationend', () => logo.classList.remove('bounce'), { once: true });
+    } else {
+      go('home');
+    }
+  }
+
+  function go(p) {
+    document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.bni').forEach(x => x.classList.remove('active'));
+    document.getElementById('page-' + p).classList.add('active');
+    const nb = document.getElementById('nav-' + p);
+    if (nb) nb.classList.add('active');
+    if (p === 'home') renderHome();
+    if (p === 'upload') renderDocs();
+    if (p === 'quiz') { showQList(); renderQSel(); }
+    if (p === 'exam') showExSel();
+    if (p === 'settings') updateStorageInfo();
+  }
+
+  /* TOAST */
+  function toast(msg, d = 2500) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('on');
+    setTimeout(() => t.classList.remove('on'), d);
+  }
+
+  /* UPLOAD */
+  function setupUpload() {
+    const z = document.getElementById('uzone');
+    const page = document.getElementById('page-upload');
+    const i = document.getElementById('pfi');
+
+    // Grande zone visible (quand vide)
+    z.addEventListener('dragover', e => { e.preventDefault(); z.classList.add('drag'); });
+    z.addEventListener('dragleave', () => z.classList.remove('drag'));
+    z.addEventListener('drop', e => { e.preventDefault(); z.classList.remove('drag'); handleFiles(e.dataTransfer.files); });
+
+    // Drag & drop invisible sur toute la page (quand docs présents)
+    page.addEventListener('dragover', e => { e.preventDefault(); });
+    page.addEventListener('drop', e => { e.preventDefault(); handleFiles(e.dataTransfer.files); });
+
+    i.addEventListener('change', e => { handleFiles(e.target.files); i.value = ''; });
+  }
+
+  async function handleFiles(files) {
+    for (const f of files) {
+      if (f.type !== 'application/pdf') { toast('❌ Seulement les PDF'); continue; }
+      await processPDF(f);
+    }
+  }
+
+  async function processPDF(file) {
+    toast('📄 Lecture du PDF...');
+    try {
+      const ab = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: ab }).promise;
+      let txt = '', pageTexts = [];
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const pg = await pdf.getPage(i);
+        const ct = await pg.getTextContent();
+        const pageText = ct.items.map(x => x.str).join(' ').replace(/\s+/g, ' ').trim();
+        pageTexts.push(pageText);
+        txt += pageText + '\n';
+      }
+      txt = txt.trim();
+      if (txt.length < 50) { toast('⚠️ PDF vide ou image (texte illisible)'); return; }
+      pendingDoc = { name: file.name, text: txt.substring(0, 50000), pageTexts, pages: pdf.numPages };
+      openModal(file.name);
+    } catch (e) {
+      console.error(e);
+      toast('❌ Erreur lecture PDF');
+    }
+  }
+
+  function openModal(fname) {
+    selSub = null;
+    document.getElementById('modfilename').textContent = fname + ' — ' + pendingDoc.pages + ' page(s)';
+    document.getElementById('docname').value = fname.replace(/\.pdf$/i, '');
+    document.getElementById('subgrid').innerHTML = SUBS.map((s, i) => `
+      <div class="subi" onclick="pickSub(${i},this)">${s.i}<br><span style="font-size:11px">${s.n}</span></div>
+    `).join('');
+    document.getElementById('submodal').classList.add('on');
+  }
+
+  function pickSub(i, el) {
+    selSub = i;
+    document.querySelectorAll('#subgrid .subi').forEach(x => x.classList.remove('sel'));
+    el.classList.add('sel');
+  }
+
+  function closeModal() { document.getElementById('submodal').classList.remove('on'); pendingDoc = null; }
+
+  async function confirmDoc() {
+    if (selSub === null) { toast('⚠️ Choisis une matière'); return; }
+    const s = SUBS[selSub];
+    const nm = document.getElementById('docname').value.trim() || pendingDoc.name;
+    const doc = { id: '' + Date.now(), name: nm, sub: s.n, ico: s.i, pages: pendingDoc.pages, text: pendingDoc.text, pageTexts: pendingDoc.pageTexts || [], done: 0, addedAt: new Date().toISOString() };
+    try { await idbPut(doc); } catch (e) {
+      S.docs.push(doc);
+      try { localStorage.setItem('sai', JSON.stringify({ docs: S.docs })); } catch (e2) {}
+    }
+    if (!S.docs.find(d => d.id === doc.id)) S.docs.push(doc);
+    saveStats(); closeModal(); renderDocs(); renderHome(); renderQSel(); updateStorageInfo();
+    toast('✅ "' + nm + '" ajouté !');
+  }
+
+  /* DOCS */
+  function renderDocs() {
+    const el = document.getElementById('doclist');
+    const uzone = document.getElementById('uzone');
+    const addBtn = document.getElementById('add-btn');
+    if (!S.docs.length) {
+      uzone.style.display = 'block';
+      addBtn.style.display = 'none';
+      el.innerHTML = '';
+      return;
+    }
+    uzone.style.display = 'none';
+    addBtn.style.display = 'flex';
+    el.innerHTML = S.docs.map(d => `
+      <div class="ditem">
+        <div class="dic">${d.ico}</div>
+        <div class="dinf">
+          <div class="dnm">${d.name}</div>
+          <div class="dmt"><span class="badge">${d.sub}</span> ${d.pages}p · ${d.done} quiz</div>
+        </div>
+        <div class="dact">
+          <button class="ibtn" title="Quiz" onclick="quizDoc('${d.id}')">🧠</button>
+          <button class="ibtn" title="Supprimer" onclick="delDoc('${d.id}')">🗑️</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  async function delDoc(id) {
+    if (!confirm('Supprimer ce document ?')) return;
+    try { await idbDel(id); } catch (e) {}
+    S.docs = S.docs.filter(d => d.id !== id);
+    saveStats(); renderDocs(); renderHome(); renderQSel(); updateStorageInfo();
+    toast('Document supprimé');
+  }
+
+  /* ============ DOC VIEWER ============ */
+
+  function quizDoc(id) {
+    go('quiz');
+    showQSetup();
+    document.getElementById('qdoc').value = id;
+  }
+
+  /* HOME */
+  function renderHome() {
+    document.getElementById('st-docs').textContent = S.docs.length;
+    document.getElementById('st-quiz').textContent = S.stats.done;
+    document.getElementById('st-avg').textContent = S.stats.tot > 0 ? Math.round(S.stats.pts / S.stats.tot * 100) + '%' : '—';
+    const cg = document.getElementById('cgrid'), nd = document.getElementById('nodoc');
+    if (!S.docs.length) { cg.style.display = 'none'; nd.style.display = 'block'; return; }
+    cg.style.display = 'grid'; nd.style.display = 'none';
+    // 2 derniers docs utilisés (par lastUsed puis addedAt)
+    const recent = [...S.docs]
+      .sort((a, b) => (b.lastUsed || b.addedAt || 0) > (a.lastUsed || a.addedAt || 0) ? 1 : -1)
+      .slice(0, 2);
+    cg.innerHTML = recent.map(d => `
+      <div class="ccard" onclick="quizDoc('${d.id}')">
+        <div class="cic">${d.ico}</div>
+        <div class="cnm">${d.name}</div>
+        <div class="cct">${d.sub}</div>
+        <div class="pbar mt2"><div class="pfill" style="width:${Math.min((d.done||0) * 10, 100)}%"></div></div>
+      </div>
+    `).join('');
+  }
+
+  function filterQuiz(sub) {
+    go('quiz');
+    const d = S.docs.find(x => x.sub === sub);
+    if (d) document.getElementById('qdoc').value = d.id;
+  }
+
+  /* QUIZ SETUP */
+  function renderQSel() {
+    const sel = document.getElementById('qdoc'), cur = sel.value;
+    sel.innerHTML = '<option value="">-- Choisir un document --</option>' +
+      S.docs.map(d => `<option value="${d.id}">${d.ico} ${d.name}</option>`).join('');
+    if (cur) sel.value = cur;
+  }
+
+  function pickType(el, t) {
+    document.querySelectorAll('[data-t]').forEach(x => x.classList.remove('sel'));
+    el.classList.add('sel'); qtype = t;
+  }
+
+  let qPageMode = 'all', exPageMode = 'all', qDiff = 'facile';
+
+  function parseJSON(raw) {
+    // Nettoyer les balises markdown
+    raw = raw.replace(/```json/gi, '').replace(/```/g, '').trim();
+    // Extraire le premier tableau JSON valide
+    const arrMatch = raw.match(/\[[\s\S]*\]/);
+    if (arrMatch) { try { return JSON.parse(arrMatch[0]); } catch(e) {} }
+    // Extraire le premier objet JSON valide
+    const objMatch = raw.match(/\{[\s\S]*\}/);
+    if (objMatch) { try { return JSON.parse(objMatch[0]); } catch(e) {} }
+    // Dernier recours
+    return JSON.parse(raw);
+  }
+
+  const DIFF_PROMPTS = {
+    facile: "EASY level: direct questions on basic knowledge, clear wording, no traps, obvious answers for anyone who read the course.",
+    normal: "NORMAL level: advanced knowledge required, some reflection needed, slightly complex wording, 1-2 credible wrong options in MCQ.",
+    dur:    "HARD level: very advanced knowledge, real traps in wording, precise course details, very credible wrong options, requires true mastery.",
+    merde:  "EXTREME level: traps everywhere, misleading wording, ultra-precise details, false friends, exceptions, edge cases, wrong options nearly identical to correct answer. Only someone with perfect mastery can succeed."
+  };
+
+  function pickDiff(el, d) {
+    document.querySelectorAll('[data-diff]').forEach(x => x.classList.remove('sel'));
+    el.classList.add('sel');
+    qDiff = d;
+  }
+
+  function qPickPages(el, mode) {
+    document.querySelectorAll('[data-qp]').forEach(x => x.classList.remove('sel'));
+    el.classList.add('sel');
+    qPageMode = mode;
+    document.getElementById('qpagerange').style.display = mode === 'range' ? 'block' : 'none';
+  }
+
+  function exPickPages(el, mode) {
+    document.querySelectorAll('[data-exp]').forEach(x => x.classList.remove('sel'));
+    el.classList.add('sel');
+    exPageMode = mode;
+    document.getElementById('expagerange').style.display = mode === 'range' ? 'block' : 'none';
+  }
+
+  function qDocChanged() {
+    const id = document.getElementById('qdoc').value;
+    const doc = S.docs.find(d => d.id === id);
+    if (!doc) return;
+    const info = document.getElementById('qpageinfo');
+    if (info) info.textContent = doc.pages ? `Ce PDF contient ${doc.pages} page(s)` : '';
+    const toEl = document.getElementById('qpageto');
+    if (toEl && doc.pages) toEl.value = doc.pages;
+    const fromEl = document.getElementById('qpagefrom');
+    if (fromEl) fromEl.value = 1;
+  }
+
+  function getTextForQuiz(doc, fromEl, toEl, modeFlag) {
+    if (modeFlag !== 'range') return doc.text;
+    if (!doc.pageTexts || !doc.pageTexts.length) {
+      toast('⚠️ Réimporte ce PDF pour activer la plage de pages');
+      return doc.text;
+    }
+    const from = Math.max(1, parseInt(fromEl?.value) || 1) - 1;
+    const to   = Math.min(doc.pageTexts.length, parseInt(toEl?.value) || doc.pageTexts.length);
+    if (from >= to) return doc.text;
+    const rangeText = doc.pageTexts.slice(from, to).join('\n');
+    if (rangeText.trim().length < 50) {
+      toast('⚠️ Pages vides ou trop courtes, utilisation du PDF complet');
+      return doc.text;
+    }
+    return rangeText.substring(0, 50000);
+  }
+
+  /* ============ SAVED QUIZZES ============ */
+  let savedQuizzes = [];
+  const DIFF_LABELS = { facile:'😊 Facile', normal:'🎯 Normal', dur:'🔥 Dur', merde:'💀 Extrême' };
+  const TYPE_LABELS = { mcq:'QCM', vf:'V/F', flash:'Flashcards', open:'Ouvertes' };
+
+  function loadSavedQuizzes() {
+    try { savedQuizzes = JSON.parse(localStorage.getItem('sai_quizzes') || '[]'); } catch(e) { savedQuizzes = []; }
+  }
+
+  function persistSavedQuizzes() {
+    try { localStorage.setItem('sai_quizzes', JSON.stringify(savedQuizzes.slice(0, 30))); } catch(e) {}
+  }
+
+  function renderQList() {
+    const items = document.getElementById('qlist-items');
+    const empty = document.getElementById('qlist-empty');
+    if (!savedQuizzes.length) {
+      items.innerHTML = '';
+      empty.style.display = 'block';
+      return;
+    }
+    empty.style.display = 'none';
+    items.innerHTML = savedQuizzes.map(q => {
+      const pct = q.finished ? Math.round((q.type === 'flash' ? q.fkn : q.score) / q.qs.length * 100) : null;
+      const status = q.finished
+        ? `<span style="color:var(--ok);font-weight:700">${pct}%</span> · Terminé`
+        : `En cours · Q${q.cur + 1}/${q.qs.length}`;
+      const bar = q.finished
+        ? `<div class="pbar mt2"><div class="pfill" style="width:${pct}%"></div></div>`
+        : `<div class="pbar mt2"><div class="pfill" style="width:${Math.round(q.cur / q.qs.length * 100)}%;background:var(--warn)"></div></div>`;
+      return `
+        <div class="ditem" style="cursor:pointer" onclick="continueQuiz('${q.id}')">
+          <div class="dic" style="font-size:24px">${q.docIco || '📄'}</div>
+          <div class="dinf">
+            <div class="dnm">${q.docName}</div>
+            <div class="dmt">${TYPE_LABELS[q.type] || q.type} · ${DIFF_LABELS[q.diff] || q.diff} · ${status}</div>
+            ${bar}
+          </div>
+          <button class="ibtn" onclick="event.stopPropagation();deleteQuiz('${q.id}')">🗑️</button>
+        </div>`;
+    }).join('');
+  }
+
+  function showQList() {
+    document.getElementById('qlist-view').style.display = 'block';
+    document.getElementById('qsel').style.display = 'none';
+    document.getElementById('qload').style.display = 'none';
+    document.getElementById('qactive').style.display = 'none';
+    document.getElementById('qres').style.display = 'none';
+    renderQList();
+  }
+
+  function showQSetup() {
+    document.getElementById('qlist-view').style.display = 'none';
+    document.getElementById('qsel').style.display = 'block';
+    document.getElementById('qload').style.display = 'none';
+    document.getElementById('qactive').style.display = 'none';
+    document.getElementById('qres').style.display = 'none';
+    renderQSel();
+  }
+
+  function deleteQuiz(id) {
+    savedQuizzes = savedQuizzes.filter(q => q.id !== id);
+    persistSavedQuizzes();
+    renderQList();
+  }
+
+  function continueQuiz(id) {
+    const sq = savedQuizzes.find(q => q.id === id);
+    if (!sq) return;
+    if (sq.finished) {
+      // Afficher résultats
+      S.quiz = { qs: sq.qs, cur: sq.cur, score: sq.score, type: sq.type, wrongs: sq.wrongs || [], fkn: sq.fkn || 0, docId: sq.docId, savedId: sq.id };
+      document.getElementById('qlist-view').style.display = 'none';
+      document.getElementById('qres').style.display = 'block';
+      const pct = Math.round((sq.type === 'flash' ? sq.fkn : sq.score) / sq.qs.length * 100);
+      document.getElementById('rcircle').style.setProperty('--pct', pct);
+      document.getElementById('rpct').textContent = pct + '%';
+      const [msg, det] = pct >= 90 ? ['🌟 Excellent !','Tu maîtrises très bien ce sujet'] :
+        pct >= 70 ? ['👍 Bien !','Continue comme ça !'] :
+        pct >= 50 ? ['📚 Assez bien','Encore un peu de révision'] :
+        ['💪 Courage !','Revois la synthèse et réessaie'];
+      document.getElementById('rmsg').textContent = msg;
+      document.getElementById('rdet').textContent = `${sq.type === 'flash' ? sq.fkn : sq.score}/${sq.qs.length} — ${det}`;
+      const ws = document.getElementById('wrongs'), wl = document.getElementById('wronglist');
+      if (sq.wrongs?.length) {
+        wl.innerHTML = sq.wrongs.map(w => `<div class="card"><div style="font-size:13px;font-weight:600;margin-bottom:8px">❓ ${w.q}</div><div style="font-size:12px;color:var(--err)">❌ ${w.yours}</div><div style="font-size:12px;color:var(--ok)">✅ ${w.right}</div></div>`).join('');
+        ws.style.display = 'block';
+      } else ws.style.display = 'none';
+    } else {
+      // Reprendre
+      S.quiz = { qs: sq.qs, cur: sq.cur, score: sq.score, type: sq.type, wrongs: sq.wrongs || [], fkn: sq.fkn || 0, docId: sq.docId, savedId: sq.id };
+      document.getElementById('qlist-view').style.display = 'none';
+      document.getElementById('qactive').style.display = 'block';
+      if (sq.type === 'flash') showFlash();
+      else if (sq.type === 'open') showOpen();
+      else showMCQ();
+      renderQ();
+    }
+  }
+
+  function saveAndExitQuiz() {
+    const id = S.quiz.savedId;
+    if (id) {
+      const sq = savedQuizzes.find(q => q.id === id);
+      if (sq) { sq.cur = S.quiz.cur; sq.score = S.quiz.score; sq.wrongs = S.quiz.wrongs; sq.fkn = S.quiz.fkn; persistSavedQuizzes(); }
+    }
+    showQList();
+  }
+
+  function updateSavedQuiz() {
+    const id = S.quiz.savedId;
+    if (!id) return;
+    const sq = savedQuizzes.find(q => q.id === id);
+    if (sq) { sq.cur = S.quiz.cur; sq.score = S.quiz.score; sq.wrongs = S.quiz.wrongs; sq.fkn = S.quiz.fkn; persistSavedQuizzes(); }
+  }
+
+  function showQSel() {
+    showQList();
+  }
+
+  async function startQuiz() {
+    const id = document.getElementById('qdoc').value;
+    if (!id) { toast('⚠️ Choisis un document'); return; }
+    const k = getKey(), gk = getGeminiKey();
+    if (!k && !gk) { toast('🔑 Configure une clé API dans Réglages'); go('settings'); return; }
+    const doc = S.docs.find(d => d.id === id);
+    const cnt = parseInt(document.getElementById('qcnt').value);
+    document.getElementById('qlist-view').style.display = 'none';
+    document.getElementById('qsel').style.display = 'none';
+
+    // Quiz manuel : pas d'API
+    if (doc.manual) {
+      const sqM = { id: 'sq_' + Date.now(), docId: id, docName: doc.name, docIco: doc.ico, type: doc.manualType, diff: 'manuel', qs: doc.qs, cur: 0, score: 0, wrongs: [], fkn: 0, finished: false, createdAt: new Date().toISOString() };
+      savedQuizzes.unshift(sqM); persistSavedQuizzes();
+      S.quiz = { qs: doc.qs, cur: 0, score: 0, type: doc.manualType, wrongs: [], fkn: 0, docId: id, savedId: sqM.id };
+      document.getElementById('qactive').style.display = 'block';
+      if (doc.manualType === 'flash') showFlash();
+      else if (doc.manualType === 'open') showOpen();
+      else showMCQ();
+      renderQ();
+      return;
+    }
+
+    document.getElementById('qload').style.display = 'block';
+    try {
+      const txt = getTextForQuiz(doc, document.getElementById('qpagefrom'), document.getElementById('qpageto'), qPageMode);
+      const qs = await genQs(txt, doc.name, doc.sub, cnt, qtype, gk || k, !!gk, qDiff);
+      const sqEntry = { id: 'sq_' + Date.now(), docId: id, docName: doc.name, docIco: doc.ico, type: qtype, diff: qDiff, qs, cur: 0, score: 0, wrongs: [], fkn: 0, finished: false, createdAt: new Date().toISOString() };
+      savedQuizzes.unshift(sqEntry);
+      persistSavedQuizzes();
+      S.quiz = { qs, cur: 0, score: 0, type: qtype, wrongs: [], fkn: 0, docId: id, savedId: sqEntry.id };
+      document.getElementById('qload').style.display = 'none';
+      document.getElementById('qactive').style.display = 'block';
+      if (qtype === 'flash') showFlash();
+      else if (qtype === 'open') showOpen();
+      else showMCQ();
+      renderQ();
+    } catch (e) {
+      console.error(e);
+      document.getElementById('qsel').style.display = 'block';
+      document.getElementById('qload').style.display = 'none';
+      toast('❌ ' + e.message);
+    }
+  }
+
+  async function quickQuiz() {
+    if (!S.docs.length) { toast('📄 Ajoute d\'abord un document'); go('upload'); return; }
+    const k = getKey();
+    if (!k) { toast('🔑 Configure ta clé API'); go('settings'); return; }
+    go('quiz');
+    const doc = S.docs[Math.floor(Math.random() * S.docs.length)];
+    document.getElementById('qdoc').value = doc.id;
+    document.getElementById('qcnt').value = '10';
+    qtype = 'mcq';
+    document.querySelectorAll('[data-t]').forEach(x => x.classList.remove('sel'));
+    document.querySelector('[data-t="mcq"]').classList.add('sel');
+    await startQuiz();
+  }
+
+  /* AI GENERATION */
+  async function genQs(text, name, sub, cnt, type, key, useGemini = false, diff = 'facile') {
+    const excerpt = text.substring(0, 12000);
+    const typeInstr = {
+      mcq:   `Generate ${cnt} multiple choice questions with 4 options. Format: [{"q":"...","options":["A","B","C","D"],"correct":0,"explanation":"..."}] where correct is the 0-based index.`,
+      vf:    `Generate ${cnt} true/false statements. Format: [{"q":"statement","correct":true,"explanation":"..."}]`,
+      flash: `Generate ${cnt} flashcard pairs. Format: [{"front":"concept/question","back":"definition/answer"}]`,
+      open:  `Generate ${cnt} open-ended questions with model answers. Format: [{"q":"question","model_answer":"detailed answer"}]`
+    }[type];
+
+    const diffInstr = DIFF_PROMPTS[diff] || DIFF_PROMPTS.facile;
+
+    const pageNote = (diff !== 'facile' || excerpt.length < text.length) ? `IMPORTANT: Generate questions EXCLUSIVELY and STRICTLY from the content provided between the --- delimiters above. Do NOT use any external knowledge. Do NOT reference topics that are not explicitly present in the text above.` : '';
+
+    const prompt = `You are a teacher creating study material for a 5th secondary student (16-17 years) in "${sub}".
+
+The following is the ONLY content you must use to generate questions:
+---
+${excerpt}
+---
+
+${pageNote}
+
+Difficulty: ${diffInstr}
+
+${typeInstr}
+
+Strict rules:
+- Respond ONLY with a valid JSON array, no markdown, no explanation
+- Every question MUST be directly answerable from the text above and ONLY from it
+- Do NOT invent or add information not present in the text
+- Language: French
+- Generate exactly ${cnt} items`;
+
+    let raw;
+    if (useGemini) {
+      const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+        body: JSON.stringify({ model: 'llama-3.3-70b-versatile', max_tokens: 4096, messages: [{ role: 'user', content: prompt }] })
+      });
+      if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error(e.error?.message || 'HTTP ' + r.status); }
+      const d = await r.json();
+      raw = d.choices[0].message.content.trim();
+    } else {
+      const r = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+        body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 4096, messages: [{ role: 'user', content: prompt }] })
+      });
+      if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error(e.error?.message || 'HTTP ' + r.status); }
+      const d = await r.json();
+      raw = d.content[0].text.trim();
+    }
+    return parseJSON(raw);
+  }
+
+  /* MCQ */
+  function showMCQ() {
+    document.getElementById('qmcq').style.display = 'block';
+    document.getElementById('qflash').style.display = 'none';
+    document.getElementById('qopen').style.display = 'none';
+  }
+
+  function renderQ() {
+    const { qs, cur, score, type } = S.quiz;
+    const q = qs[cur], tot = qs.length;
+    document.getElementById('qnum').textContent = `Question ${cur + 1}/${tot}`;
+    document.getElementById('qsc').textContent = `Score: ${score}`;
+    document.getElementById('qprog').style.width = `${(cur / tot) * 100}%`;
+    document.getElementById('qtext').textContent = q.q;
+    document.getElementById('qexp').style.display = 'none';
+    document.getElementById('qnext').style.display = 'none';
+    const ol = document.getElementById('qopts');
+    if (type === 'vf') {
+      ol.innerHTML = ['✅ Vrai', '❌ Faux'].map((o, i) => `<button class="obtn" onclick="selAns(${i})">${o}</button>`).join('');
+    } else {
+      ol.innerHTML = (q.options || []).map((o, i) => `<button class="obtn" onclick="selAns(${i})">${'ABCD'[i]}. ${o}</button>`).join('');
+    }
+  }
+
+  function selAns(idx) {
+    const { qs, cur, type } = S.quiz;
+    const q = qs[cur];
+    const btns = document.querySelectorAll('.obtn');
+    btns.forEach(b => b.disabled = true);
+    const ci = type === 'vf' ? (q.correct === true ? 0 : 1) : q.correct;
+    const ok = idx === ci;
+    btns[idx].classList.add(ok ? 'ok' : 'ng');
+    if (!ok) {
+      btns[ci].classList.add('ok');
+      S.quiz.wrongs.push({
+        q: q.q,
+        yours: type === 'vf' ? (idx === 0 ? 'Vrai' : 'Faux') : (q.options?.[idx] || ''),
+        right: type === 'vf' ? (q.correct ? 'Vrai' : 'Faux') : (q.options?.[ci] || ''),
+        exp: q.explanation || ''
+      });
+    } else {
+      S.quiz.score++;
+    }
+    if (q.explanation) {
+      const ex = document.getElementById('qexp');
+      ex.textContent = '💡 ' + q.explanation;
+      ex.style.display = 'block';
+    }
+    document.getElementById('qnext').style.display = 'block';
+  }
+
+  function nextQ() {
+    S.quiz.cur++;
+    updateSavedQuiz();
+    if (S.quiz.cur >= S.quiz.qs.length) showRes();
+    else renderQ();
+  }
+
+  /* FLASHCARD */
+  function showFlash() {
+    document.getElementById('qmcq').style.display = 'none';
+    document.getElementById('qflash').style.display = 'block';
+    document.getElementById('qopen').style.display = 'none';
+    renderFC();
+  }
+
+  function renderFC() {
+    const { qs, cur } = S.quiz, tot = qs.length, q = qs[cur];
+    document.getElementById('fcnum').textContent = `${cur + 1}/${tot}`;
+    document.getElementById('fcprog').style.width = `${(cur / tot) * 100}%`;
+    document.getElementById('fcq').textContent = q.front;
+    document.getElementById('fca').textContent = q.back;
+    document.getElementById('fc').classList.remove('flip');
+  }
+
+  function flipCard() { document.getElementById('fc').classList.toggle('flip'); }
+
+  function fcAns(knew) {
+    if (knew) S.quiz.fkn++;
+    S.quiz.cur++;
+    updateSavedQuiz();
+    if (S.quiz.cur >= S.quiz.qs.length) { S.quiz.score = S.quiz.fkn; showRes(); }
+    else renderFC();
+  }
+
+  /* OPEN */
+  function showOpen() {
+    document.getElementById('qmcq').style.display = 'none';
+    document.getElementById('qflash').style.display = 'none';
+    document.getElementById('qopen').style.display = 'block';
+    renderOpen();
+  }
+
+  function renderOpen() {
+    const { qs, cur } = S.quiz, tot = qs.length, q = qs[cur];
+    document.getElementById('opnum').textContent = `${cur + 1}/${tot}`;
+    document.getElementById('opprog').style.width = `${(cur / tot) * 100}%`;
+    document.getElementById('opqtxt').textContent = q.q;
+    document.getElementById('opans').value = '';
+    document.getElementById('opexp').style.display = 'none';
+    document.getElementById('opcheck').style.display = 'block';
+    document.getElementById('opnext').style.display = 'none';
+  }
+
+  async function checkOpen() {
+    const ans = document.getElementById('opans').value.trim();
+    if (!ans) { toast('✏️ Écris ta réponse'); return; }
+    const q = S.quiz.qs[S.quiz.cur];
+    const gk = getGeminiKey(), k = getKey();
+    document.getElementById('opcheck').style.display = 'none';
+    const ex = document.getElementById('opexp');
+    ex.style.display = 'block';
+    ex.innerHTML = '<div class="spin" style="width:20px;height:20px;border-width:2px"></div> Correction...';
+    const corrPrompt = `Question: ${q.q}\nRéponse étudiant: ${ans}\nRéponse modèle: ${q.model_answer}\n\nL'étudiant a-t-il bien répondu ? Réponds UNIQUEMENT en JSON: {"correct":true/false,"feedback":"feedback bref en français"}`;
+    try {
+      let raw;
+      if (gk) {
+        const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + gk },
+          body: JSON.stringify({ model: 'llama-3.3-70b-versatile', max_tokens: 512, messages: [{ role: 'user', content: corrPrompt }] })
+        });
+        const d = await r.json();
+        raw = d.choices[0].message.content;
+      } else {
+        const r = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-api-key': k, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+          body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 512, messages: [{ role: 'user', content: corrPrompt }] })
+        });
+        const d = await r.json();
+        raw = d.content[0].text;
+      }
+      let fb; try { fb = parseJSON(raw); } catch(e) { fb = {correct:false, feedback:"Voir la réponse modèle."}; }
+      if (fb.correct) S.quiz.score++;
+      ex.innerHTML = `
+        <div style="font-weight:700;margin-bottom:8px;color:${fb.correct ? 'var(--ok)' : 'var(--warn)'}">${fb.correct ? '✅ Correct !' : '💡 Partiellement correct'}</div>
+        <div>${fb.feedback}</div>
+        <div style="font-size:12px;color:var(--dim);margin-top:8px"><strong>Réponse modèle:</strong> ${q.model_answer}</div>
+      `;
+    } catch (e) {
+      ex.innerHTML = `<div style="font-weight:700;margin-bottom:8px">📋 Réponse modèle:</div><div>${q.model_answer}</div>`;
+    }
+    document.getElementById('opnext').style.display = 'block';
+  }
+
+  function nextOpen() {
+    S.quiz.cur++;
+    updateSavedQuiz();
+    if (S.quiz.cur >= S.quiz.qs.length) showRes();
+    else renderOpen();
+  }
+
+  /* RESULTS */
+  async function showRes() {
+    document.getElementById('qactive').style.display = 'none';
+    document.getElementById('qres').style.display = 'block';
+    const { qs, score, type, fkn, wrongs, docId } = S.quiz;
+    const tot = qs.length, sc = type === 'flash' ? fkn : score;
+    const pct = Math.round(sc / tot * 100);
+    S.stats.done++; S.stats.pts += sc; S.stats.tot += tot;
+    const doc = S.docs.find(d => d.id === docId);
+    if (doc) { doc.done = (doc.done || 0) + 1; doc.lastUsed = Date.now(); try { await idbPut(doc); } catch (e) {} }
+    const sq = savedQuizzes.find(q => q.id === S.quiz.savedId);
+    if (sq) { sq.finished = true; sq.score = score; sq.fkn = fkn; sq.cur = tot; sq.wrongs = wrongs; persistSavedQuizzes(); }
+    saveStats(); renderHome();
+    document.getElementById('rcircle').style.setProperty('--pct', pct);
+    document.getElementById('rpct').textContent = pct + '%';
+    const [msg, det] = pct >= 90 ? ['🌟 Excellent !', 'Tu maîtrises très bien ce sujet'] :
+      pct >= 70 ? ['👍 Bien !', 'Continue comme ça !'] :
+      pct >= 50 ? ['📚 Assez bien', 'Encore un peu de révision'] :
+      ['💪 Courage !', 'Revois la synthèse et réessaie'];
+    document.getElementById('rmsg').textContent = msg;
+    document.getElementById('rdet').textContent = `${sc}/${tot} — ${det}`;
+    const ws = document.getElementById('wrongs'), wl = document.getElementById('wronglist');
+    if (wrongs.length) {
+      wl.innerHTML = wrongs.map(w => `
+        <div class="card">
+          <div style="font-size:13px;font-weight:600;margin-bottom:8px">❓ ${w.q}</div>
+          <div style="font-size:12px;color:var(--err);margin-bottom:4px">❌ Toi: ${w.yours}</div>
+          <div style="font-size:12px;color:var(--ok);margin-bottom:${w.exp ? '8' : '0'}px">✅ Correct: ${w.right}</div>
+          ${w.exp ? `<div style="font-size:12px;color:var(--dim)">💡 ${w.exp}</div>` : ''}
+        </div>
+      `).join('');
+      ws.style.display = 'block';
+    } else {
+      ws.style.display = 'none';
+    }
+  }
+
+  function restartQ() {
+    S.quiz.cur = 0; S.quiz.score = 0; S.quiz.wrongs = []; S.quiz.fkn = 0;
+    document.getElementById('qres').style.display = 'none';
+    document.getElementById('qactive').style.display = 'block';
+    if (S.quiz.type === 'flash') showFlash();
+    else if (S.quiz.type === 'open') showOpen();
+    else showMCQ();
+    renderQ();
+  }
+
+  function backSel() { showQList(); }
+
+  /* SETTINGS */
+  /* ============ EXPORT / IMPORT ============ */
+  function ab2b64(ab) {
+    const bytes = new Uint8Array(ab);
+    let bin = '', chunk = 8192;
+    for (let i = 0; i < bytes.length; i += chunk)
+      bin += String.fromCharCode(...bytes.subarray(i, i + chunk));
+    return btoa(bin);
+  }
+
+  function b642ab(b64) {
+    const bin = atob(b64);
+    const ab = new ArrayBuffer(bin.length);
+    const view = new Uint8Array(ab);
+    for (let i = 0; i < bin.length; i++) view[i] = bin.charCodeAt(i);
+    return ab;
+  }
+
+  async function exportDocs() {
+    if (!S.docs.length) { toast('⚠️ Aucun document à exporter'); return; }
+    const data = JSON.stringify({ docs: S.docs, exportedAt: new Date().toISOString() });
+    const blob = new Blob([data], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = '3agoun-docs-' + new Date().toISOString().slice(0,10) + '.json';
+    a.click();
+    URL.revokeObjectURL(a.href);
+    toast('✅ ' + S.docs.length + ' document(s) exporté(s) avec PDF !');
+  }
+
+  async function importDocs(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const status = document.getElementById('transferStatus');
+    status.style.color = 'var(--dim)';
+    status.textContent = 'Importation en cours...';
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
+      const docs = data.docs || [];
+      if (!docs.length) { status.style.color = 'var(--err)'; status.textContent = '❌ Fichier vide ou invalide'; return; }
+      let added = 0, skipped = 0;
+      for (const doc of docs) {
+        if (S.docs.find(d => d.id === doc.id)) { skipped++; continue; }
+        S.docs.push(doc);
+        try { await idbPut(doc); } catch(e) {}
+        added++;
+      }
+      saveStats(); renderHome(); renderDocs(); renderQSel(); updateStorageInfo();
+      status.style.color = 'var(--ok)';
+      status.textContent = `✅ ${added} ajouté(s), ${skipped} déjà présent(s)`;
+      toast('✅ Import terminé !');
+    } catch(e) {
+      status.style.color = 'var(--err)';
+      status.textContent = '❌ Fichier invalide';
+    }
+    input.value = '';
+  }
+
+  async function clearAll() {
+    if (!confirm('⚠️ Effacer TOUTES les données ? Cette action est irréversible.')) return;
+    try {
+      await Promise.all(S.docs.map(d => idbDel(d.id)));
+    } catch (e) {}
+    localStorage.removeItem('sai_stats');
+    localStorage.removeItem('sai');
+    S = { docs: [], stats: { done: 0, tot: 0, pts: 0 }, quiz: { qs: [], cur: 0, score: 0, type: 'mcq', wrongs: [], fkn: 0, docId: null } };
+    renderHome(); renderDocs(); renderQSel(); updateStorageInfo(); toast('✅ Données effacées');
+  }
+
+  /* ============ EXAM ============ */
+  let exDiff = 'normal', exQs = [], exCur = 0, exAnswers = [], exTimer = null, exTimeLeft = 0;
+
+  function renderExDocList() {
+    const el = document.getElementById('ex-doclist');
+    if (!S.docs.filter(d => !d.manual).length) {
+      el.innerHTML = '<p class="dim tsm">Aucun document — importe d\'abord un PDF</p>';
+      return;
+    }
+    el.innerHTML = S.docs.filter(d => !d.manual).map(d => `
+      <div class="ditem" style="padding:10px 12px;cursor:pointer" onclick="exToggleDoc('${d.id}',this)" id="exdoc-${d.id}">
+        <div class="dic" style="font-size:20px">${d.ico}</div>
+        <div class="dinf"><div class="dnm">${d.name}</div><div class="dmt">${d.sub}</div></div>
+        <div id="excheck-${d.id}" style="font-size:20px;color:var(--dim)">⬜</div>
+      </div>
+    `).join('');
+  }
+
+  function exToggleDoc(id, el) {
+    const chk = document.getElementById('excheck-' + id);
+    if (chk.textContent === '✅') {
+      chk.textContent = '⬜'; chk.style.color = 'var(--dim)';
+      el.style.borderColor = 'rgba(108,99,255,.15)';
+    } else {
+      chk.textContent = '✅'; chk.style.color = 'var(--ok)';
+      el.style.borderColor = 'var(--ok)';
+    }
+  }
+
+  function exPickDiff(el, d) {
+    document.querySelectorAll('[data-diff]').forEach(x => x.classList.remove('sel'));
+    el.classList.add('sel'); exDiff = d;
+  }
+
+  function showExSel() {
+    clearInterval(exTimer);
+    document.getElementById('ex-sel').style.display = 'block';
+    document.getElementById('ex-load').style.display = 'none';
+    document.getElementById('ex-active').style.display = 'none';
+    document.getElementById('ex-res').style.display = 'none';
+    renderExDocList();
+  }
+
+  async function startExam() {
+    const gk = getGeminiKey(), k = getKey();
+    if (!gk && !k) { toast('🔑 Configure une clé API dans Réglages'); go('settings'); return; }
+    const selectedIds = S.docs.filter(d => !d.manual && document.getElementById('excheck-' + d.id)?.textContent === '✅').map(d => d.id);
+    if (!selectedIds.length) { toast('⚠️ Sélectionne au moins un document'); return; }
+    const cnt = parseInt(document.getElementById('ex-cnt').value);
+    exTimeLeft = parseInt(document.getElementById('ex-dur').value) * 60;
+    document.getElementById('ex-sel').style.display = 'none';
+    document.getElementById('ex-load').style.display = 'block';
+    try {
+      const docs = selectedIds.map(id => S.docs.find(d => d.id === id));
+      const combinedText = docs.map(d => {
+        const txt = getTextForQuiz(d, document.getElementById('expagefrom'), document.getElementById('expageto'), exPageMode);
+        return `[${d.sub} — ${d.name}]\n${txt?.substring(0, 8000) || ''}`;
+      }).join('\n\n').substring(0, 20000);
+      const subjects = [...new Set(docs.map(d => d.sub))].join(', ');
+      const prompt = `Tu es un professeur qui crée un examen de niveau 5e secondaire en ${subjects}.
+
+Contenu des synthèses :
+---
+${combinedText}
+---
+
+Difficulty: ${DIFF_PROMPTS[exDiff] || DIFF_PROMPTS.normal}
+
+Generate ${cnt} exam questions mixing types (mcq, vf, open).
+Each object must have a "type" field: "mcq", "vf", or "open".
+Format:
+- mcq : {"type":"mcq","q":"...","options":["A","B","C","D"],"correct":0,"explanation":"..."}
+- vf  : {"type":"vf","q":"...","correct":true,"explanation":"..."}
+- open: {"type":"open","q":"...","model_answer":"..."}
+
+Rules:
+- Respond ONLY with a valid JSON array, no markdown, no explanation
+- Questions in French, specific to the content above
+- Generate exactly ${cnt} items
+- Mix the question types`;
+
+      let raw;
+      if (gk) {
+        const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + gk },
+          body: JSON.stringify({ model: 'llama-3.3-70b-versatile', max_tokens: 4096, messages: [{ role: 'user', content: prompt }] })
+        });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        const d = await r.json(); raw = d.choices[0].message.content.trim();
+      } else {
+        const r = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-api-key': k, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+          body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 4096, messages: [{ role: 'user', content: prompt }] })
+        });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        const d = await r.json(); raw = d.content[0].text.trim();
+      }
+      exQs = parseJSON(raw);
+      exCur = 0;
+      exAnswers = exQs.map(() => null);
+      document.getElementById('ex-load').style.display = 'none';
+      document.getElementById('ex-active').style.display = 'block';
+      startExTimer();
+      renderExQ();
+    } catch (e) {
+      console.error(e);
+      document.getElementById('ex-sel').style.display = 'block';
+      document.getElementById('ex-load').style.display = 'none';
+      toast('❌ ' + e.message);
+    }
+  }
+
+  function startExTimer() {
+    clearInterval(exTimer);
+    updateExTimer();
+    exTimer = setInterval(() => {
+      exTimeLeft--;
+      updateExTimer();
+      if (exTimeLeft <= 0) { clearInterval(exTimer); toast('⏰ Temps écoulé !', 4000); submitExam(); }
+    }, 1000);
+  }
+
+  function updateExTimer() {
+    const m = Math.floor(exTimeLeft / 60), s = exTimeLeft % 60;
+    const el = document.getElementById('ex-timer');
+    el.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+    el.style.background = exTimeLeft < 120 ? 'rgba(248,113,113,.25)' : 'rgba(248,113,113,.15)';
+  }
+
+  function renderExQ() {
+    const q = exQs[exCur], tot = exQs.length;
+    document.getElementById('ex-qnum').textContent = `Q ${exCur + 1}/${tot}`;
+    document.getElementById('ex-prog').style.width = `${((exCur + 1) / tot) * 100}%`;
+    document.getElementById('ex-next').style.display = exCur < tot - 1 ? 'block' : 'none';
+    document.getElementById('ex-submit').style.display = exCur === tot - 1 ? 'block' : 'none';
+    document.getElementById('ex-prev').style.display = exCur > 0 ? 'flex' : 'none';
+
+    ['ex-mcq-wrap', 'ex-open-wrap', 'ex-flash-wrap'].forEach(id => document.getElementById(id).style.display = 'none');
+
+    if (q.type === 'mcq' || q.type === 'vf') {
+      document.getElementById('ex-mcq-wrap').style.display = 'block';
+      document.getElementById('ex-qtxt').textContent = q.q;
+      const opts = q.type === 'vf' ? ['✅ Vrai', '❌ Faux'] : q.options;
+      const saved = exAnswers[exCur];
+      document.getElementById('ex-opts').innerHTML = opts.map((o, i) => `
+        <button class="obtn ${saved === i ? 'ok' : ''}" onclick="exSelAns(${i})">${q.type === 'mcq' ? 'ABCD'[i] + '. ' : ''}${o}</button>
+      `).join('');
+    } else if (q.type === 'open') {
+      document.getElementById('ex-open-wrap').style.display = 'block';
+      document.getElementById('ex-otxt').textContent = q.q;
+      document.getElementById('ex-oans').value = exAnswers[exCur] || '';
+      document.getElementById('ex-oans').oninput = () => { exAnswers[exCur] = document.getElementById('ex-oans').value; };
+    } else if (q.type === 'flash') {
+      document.getElementById('ex-flash-wrap').style.display = 'block';
+      document.getElementById('ex-fcq').textContent = q.front || q.q;
+      document.getElementById('ex-fca').textContent = q.back || q.model_answer;
+      document.getElementById('ex-fc').classList.remove('flip');
+    }
+  }
+
+  function exSelAns(idx) {
+    exAnswers[exCur] = idx;
+    document.querySelectorAll('#ex-opts .obtn').forEach((b, i) => { b.classList.toggle('ok', i === idx); });
+  }
+
+  function exFlipCard() { document.getElementById('ex-fc').classList.toggle('flip'); }
+
+  function exFcAns(knew) {
+    exAnswers[exCur] = knew ? 1 : 0;
+    if (exCur < exQs.length - 1) exNav(1); else submitExam();
+  }
+
+  function exNav(dir) {
+    exCur += dir;
+    if (exCur < 0) exCur = 0;
+    if (exCur >= exQs.length) exCur = exQs.length - 1;
+    renderExQ();
+  }
+
+  async function submitExam() {
+    clearInterval(exTimer);
+    document.getElementById('ex-active').style.display = 'none';
+    document.getElementById('ex-res').style.display = 'block';
+    let correct = 0, total = 0;
+    const reviewHTML = [];
+    for (let i = 0; i < exQs.length; i++) {
+      const q = exQs[i], ans = exAnswers[i];
+      if (q.type === 'mcq') {
+        total++;
+        const ok = ans === q.correct;
+        if (ok) correct++;
+        reviewHTML.push(`<div class="card">
+          <div style="font-size:12px;color:var(--dim);margin-bottom:4px">Q${i+1} · QCM</div>
+          <div style="font-size:13px;font-weight:600;margin-bottom:8px">${q.q}</div>
+          <div style="font-size:12px;color:${ok ? 'var(--ok)' : 'var(--err)'}">
+            ${ok ? '✅' : '❌'} Ta réponse : ${ans !== null ? q.options[ans] : 'Sans réponse'}
+          </div>
+          ${!ok ? `<div style="font-size:12px;color:var(--ok);margin-top:4px">✅ Correct : ${q.options[q.correct]}</div>` : ''}
+          ${q.explanation ? `<div style="font-size:11px;color:var(--dim);margin-top:6px">💡 ${q.explanation}</div>` : ''}
+        </div>`);
+      } else if (q.type === 'vf') {
+        total++;
+        const ci = q.correct === true ? 0 : 1;
+        const ok = ans === ci;
+        if (ok) correct++;
+        reviewHTML.push(`<div class="card">
+          <div style="font-size:12px;color:var(--dim);margin-bottom:4px">Q${i+1} · Vrai/Faux</div>
+          <div style="font-size:13px;font-weight:600;margin-bottom:8px">${q.q}</div>
+          <div style="font-size:12px;color:${ok ? 'var(--ok)' : 'var(--err)'}">
+            ${ok ? '✅' : '❌'} Ta réponse : ${ans !== null ? (ans === 0 ? 'Vrai' : 'Faux') : 'Sans réponse'}
+          </div>
+          ${!ok ? `<div style="font-size:12px;color:var(--ok);margin-top:4px">✅ Correct : ${q.correct ? 'Vrai' : 'Faux'}</div>` : ''}
+        </div>`);
+      } else if (q.type === 'open') {
+        total++;
+        const userAns = ans || '';
+        reviewHTML.push(`<div class="card">
+          <div style="font-size:12px;color:var(--dim);margin-bottom:4px">Q${i+1} · Question ouverte</div>
+          <div style="font-size:13px;font-weight:600;margin-bottom:8px">${q.q}</div>
+          <div style="font-size:12px;color:var(--tx);margin-bottom:4px">📝 Ta réponse : ${userAns || '<em style="color:var(--dim)">Sans réponse</em>'}</div>
+          <div style="font-size:12px;color:var(--ok)">✅ Réponse modèle : ${q.model_answer}</div>
+        </div>`);
+      }
+    }
+    const pct = total ? Math.round(correct / total * 100) : 0;
+    document.getElementById('ex-rcircle').style.setProperty('--pct', pct);
+    document.getElementById('ex-rpct').textContent = pct + '%';
+    const [msg, det] = pct >= 80 ? ['🌟 Excellent !', 'Tu es prêt(e) pour l\'examen'] :
+      pct >= 60 ? ['👍 Bien !', 'Encore quelques révisions'] :
+      pct >= 40 ? ['📚 À revoir', 'Revois les parties manquées'] :
+      ['💪 Courage !', 'Reprends les synthèses et réessaie'];
+    document.getElementById('ex-rmsg').textContent = msg;
+    document.getElementById('ex-rdet').textContent = `${correct}/${total} — ${det}`;
+    document.getElementById('ex-review').innerHTML = '<div class="stitle"><span>Correction détaillée</span></div>' + reviewHTML.join('');
+    S.stats.done++; S.stats.pts += correct; S.stats.tot += total;
+    saveStats(); renderHome();
+  }
+
+  /* ============ MANUAL QUIZ CREATOR ============ */
+  function initCreator() {
+    document.getElementById('cq-subgrid').innerHTML = SUBS.map((s, i) => `
+      <div class="subi" onclick="cqPickSub(${i},this)">${s.i}<br><span style="font-size:11px">${s.n}</span></div>
+    `).join('');
+  }
+
+  function cqPickType(el, t) {
+    document.querySelectorAll('[data-ct]').forEach(x => x.classList.remove('sel'));
+    el.classList.add('sel');
+    cqType = t;
+    ['mcq','vf','flash','open'].forEach(x => document.getElementById('cq-'+x).style.display = x === t ? 'block' : 'none');
+  }
+
+  function cqPickSub(i, el) {
+    cqSub = i;
+    document.querySelectorAll('#cq-subgrid .subi').forEach(x => x.classList.remove('sel'));
+    el.classList.add('sel');
+  }
+
+  function addManualQ() {
+    let q = null;
+    if (cqType === 'mcq') {
+      const qtext = document.getElementById('cq-mcq-q').value.trim();
+      const a = document.getElementById('cq-mcq-a').value.trim();
+      const b = document.getElementById('cq-mcq-b').value.trim();
+      const c = document.getElementById('cq-mcq-c').value.trim();
+      const d = document.getElementById('cq-mcq-d').value.trim();
+      const correct = parseInt(document.getElementById('cq-mcq-correct').value);
+      const exp = document.getElementById('cq-mcq-exp').value.trim();
+      if (!qtext || !a || !b) { toast('⚠️ Remplis la question et au moins A et B'); return; }
+      const options = [a, b, c, d].filter(Boolean);
+      if (correct >= options.length) { toast('⚠️ La bonne réponse n\'existe pas'); return; }
+      q = { q: qtext, options, correct, explanation: exp };
+      ['cq-mcq-q','cq-mcq-a','cq-mcq-b','cq-mcq-c','cq-mcq-d','cq-mcq-exp'].forEach(id => document.getElementById(id).value = '');
+    } else if (cqType === 'vf') {
+      const qtext = document.getElementById('cq-vf-q').value.trim();
+      const correct = document.getElementById('cq-vf-correct').value === 'true';
+      const exp = document.getElementById('cq-vf-exp').value.trim();
+      if (!qtext) { toast('⚠️ Écris une affirmation'); return; }
+      q = { q: qtext, correct, explanation: exp };
+      document.getElementById('cq-vf-q').value = '';
+      document.getElementById('cq-vf-exp').value = '';
+    } else if (cqType === 'flash') {
+      const front = document.getElementById('cq-flash-front').value.trim();
+      const back = document.getElementById('cq-flash-back').value.trim();
+      if (!front || !back) { toast('⚠️ Remplis les deux faces'); return; }
+      q = { front, back };
+      document.getElementById('cq-flash-front').value = '';
+      document.getElementById('cq-flash-back').value = '';
+    } else if (cqType === 'open') {
+      const qtext = document.getElementById('cq-open-q').value.trim();
+      const ans = document.getElementById('cq-open-ans').value.trim();
+      if (!qtext || !ans) { toast('⚠️ Remplis la question et la réponse'); return; }
+      q = { q: qtext, model_answer: ans };
+      document.getElementById('cq-open-q').value = '';
+      document.getElementById('cq-open-ans').value = '';
+    }
+    manualQs.push(q);
+    renderManualQList();
+    toast('✅ Question ' + manualQs.length + ' ajoutée !');
+  }
+
+  function renderManualQList() {
+    const el = document.getElementById('cq-list');
+    if (!manualQs.length) { el.innerHTML = ''; return; }
+    const icons = { mcq:'🔘', vf:'✅', flash:'🃏', open:'✏️' };
+    el.innerHTML = `<div class="stitle"><span>${manualQs.length} question(s) ajoutée(s)</span></div>` +
+      manualQs.map((q, i) => `
+        <div class="qitem">
+          <div class="qitem-num">${i+1}</div>
+          <div class="dic" style="font-size:18px">${icons[cqType]}</div>
+          <div class="qitem-txt">${q.q || q.front}</div>
+          <button class="ibtn" onclick="removeManualQ(${i})">🗑️</button>
+        </div>
+      `).join('');
+  }
+
+  function removeManualQ(i) {
+    manualQs.splice(i, 1);
+    renderManualQList();
+  }
+
+  async function saveManualQuiz() {
+    const name = document.getElementById('cq-name').value.trim();
+    if (!name) { toast('⚠️ Donne un nom au quiz'); return; }
+    if (!manualQs.length) { toast('⚠️ Ajoute au moins une question'); return; }
+    const s = cqSub !== null ? SUBS[cqSub] : { n: 'Autre', i: '📚' };
+    const doc = {
+      id: 'manual_' + Date.now(),
+      name, sub: s.n, ico: s.i,
+      pages: 0, text: null,
+      manual: true, manualType: cqType,
+      qs: [...manualQs],
+      done: 0, addedAt: new Date().toISOString()
+    };
+    try { await idbPut(doc); } catch(e) {}
+    if (!S.docs.find(d => d.id === doc.id)) S.docs.push(doc);
+    saveStats(); renderDocs(); renderHome(); renderQSel();
+    manualQs = []; cqSub = null;
+    document.getElementById('cq-name').value = '';
+    document.querySelectorAll('#cq-subgrid .subi').forEach(x => x.classList.remove('sel'));
+    renderManualQList();
+    toast('✅ Quiz "' + name + '" sauvegardé !');
+    go('quiz');
+    document.getElementById('qdoc').value = doc.id;
+  }
+
+  init();
+</script>
+</body>
+</html>
