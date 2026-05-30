@@ -1606,15 +1606,34 @@
   let qPageMode = 'all', exPageMode = 'all', qDiff = 'facile';
 
   function parseJSON(raw) {
-    // Nettoyer les balises markdown
-    raw = raw.replace(/```json/gi, '').replace(/```/g, '').trim();
-    // Extraire le premier tableau JSON valide
-    const arrMatch = raw.match(/\[[\s\S]*\]/);
-    if (arrMatch) { try { return JSON.parse(arrMatch[0]); } catch(e) {} }
-    // Extraire le premier objet JSON valide
-    const objMatch = raw.match(/\{[\s\S]*\}/);
-    if (objMatch) { try { return JSON.parse(objMatch[0]); } catch(e) {} }
-    // Dernier recours
+    raw = raw.replace(/```json\n?/gi, '').replace(/```\n?/g, '').trim();
+
+    function extractBalanced(str, open, close) {
+      const start = str.indexOf(open);
+      if (start === -1) return null;
+      let depth = 0, inStr = false, escape = false;
+      for (let i = start; i < str.length; i++) {
+        const c = str[i];
+        if (escape) { escape = false; continue; }
+        if (c === '\\' && inStr) { escape = true; continue; }
+        if (c === '"') { inStr = !inStr; continue; }
+        if (inStr) continue;
+        if (c === open) depth++;
+        else if (c === close) { depth--; if (depth === 0) { try { return JSON.parse(str.slice(start, i+1)); } catch(e) { return null; } } }
+      }
+      return null;
+    }
+
+    const arrStart = raw.indexOf('[');
+    const objStart = raw.indexOf('{');
+    if (arrStart !== -1 && (objStart === -1 || arrStart <= objStart)) {
+      const res = extractBalanced(raw, '[', ']');
+      if (res !== null) return res;
+    }
+    if (objStart !== -1) {
+      const res = extractBalanced(raw, '{', '}');
+      if (res !== null) return res;
+    }
     return JSON.parse(raw);
   }
 
