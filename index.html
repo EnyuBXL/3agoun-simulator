@@ -1892,9 +1892,9 @@
       ? `CRITICAL: This content is from ${pageRange} of the document ONLY. Generate questions EXCLUSIVELY about what is written in the text above. Do NOT generate questions about any other pages or topics not present in this exact text.`
       : `IMPORTANT: Generate questions EXCLUSIVELY from the content provided above. Do NOT use external knowledge.`;
 
-    const prompt = `You are a teacher creating study material for a 5th secondary student (16-17 years) in "${sub}".
+    const prompt = `You are an exam teacher. Generate exam questions that test a student's knowledge of the actual CONTENT below.
 
-The following is the ONLY content you must use to generate questions:
+Content to study:
 ---
 ${excerpt}
 ---
@@ -1905,11 +1905,13 @@ Difficulty: ${diffInstr}
 
 ${typeInstr}
 
-Strict rules:
-- Respond ONLY with a valid JSON array, no markdown, no explanation
-- Every question MUST be directly answerable from the text above and ONLY from it
-- Do NOT invent or add information not present in the text
+STRICT rules:
+- Questions must test knowledge OF the content (facts, concepts, mechanisms, definitions, dates, formulas, etc.)
+- NEVER ask meta-questions like "what subject is this?", "what does this chapter cover?", "what is this course about?" — those are useless
+- Questions must be the kind a teacher would put on a real exam
+- Every question must be answerable from the text above
 - Language: French
+- Respond ONLY with a valid JSON array, no markdown
 - Generate exactly ${cnt} items`;
 
     let raw;
@@ -2266,9 +2268,9 @@ Strict rules:
         return `[${d.sub} — ${d.name}]\n${txt?.substring(0, 8000) || ''}`;
       }).join('\n\n').substring(0, 20000);
       const subjects = [...new Set(docs.map(d => d.sub))].join(', ');
-      const prompt = `Tu es un professeur qui crée un examen de niveau 5e secondaire en ${subjects}.
+      const prompt = `You are an exam teacher. Generate a real exam that tests knowledge of the actual content below.
 
-Contenu des synthèses :
+Content:
 ---
 ${combinedText}
 ---
@@ -2282,11 +2284,13 @@ Format:
 - vf  : {"type":"vf","q":"...","correct":true,"explanation":"..."}
 - open: {"type":"open","q":"...","model_answer":"..."}
 
-Rules:
-- Respond ONLY with a valid JSON array, no markdown, no explanation
-- Questions in French, specific to the content above
-- Generate exactly ${cnt} items
-- Mix the question types`;
+STRICT rules:
+- Questions must test actual knowledge: facts, definitions, concepts, mechanisms, dates, formulas
+- NEVER ask "what is this course about?" or "what subject is this?" — useless meta-questions
+- Questions must be the kind a teacher puts on a real exam
+- Language: French
+- Respond ONLY with a valid JSON array, no markdown
+- Generate exactly ${cnt} items, mix the types`;
 
       let raw;
       if (gk) {
